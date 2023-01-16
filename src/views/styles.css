@@ -1,0 +1,136 @@
+/* Body */
+body {
+    background-color: rgba(51, 18, 74, 0.9);
+    font-variant: small-caps;
+  }
+  /* Headers */
+  .central-header
+  {
+    text-align: center;
+    margin: 2% 0 0 0;
+  }
+  /* Activities Carousel */
+  #activities-carousel
+  {
+    width: 60%;
+    border: 2px solid white;
+    margin: 5% auto;
+  }
+  
+  .activity-link
+  {
+    text-decoration: none;
+  }
+  
+  /* Navigation Bar */
+  .custom-navbar {
+    background-image: linear-gradient(darkblue, skyblue);
+    padding: 1%;
+    margin: 0;
+    width: 100%;
+    border-bottom: rgb(205, 182, 124) 10px solid;
+  }
+  
+  #navbar-content {
+      margin-left: 5%;
+      font-weight: bold;
+  }
+  
+  /* Buttons */
+  
+  .btn
+  {
+    font-variant: small-caps;
+    font-weight: bold;
+  }
+  /* Login Form */
+  
+  .login-form
+  {
+    background-image: linear-gradient(skyblue, darkblue);
+    border: 5px solid rgb(205, 182, 124);
+    width: 30%;
+    height: 460px;
+    margin: 2.5% auto 0;
+    text-align: center;
+    color: white;
+    font-size: larger;
+    padding: 5%;
+  }
+  
+  
+  /* Invalid Input Messages */
+  
+  .invalid-message
+  {
+    color: white;
+    font-weight: bold;
+    font-size: medium;
+  }
+  /* Booking Form - General*/
+  
+  .customize-booking-basics, .customize-booking-extras
+  {
+    padding: 1rem;
+    margin: 2rem;
+    overflow-y: scroll;
+    display: inline-block;
+    background-color: white;
+    border: 2px solid black;
+    width: 40rem;
+    height: 34rem;
+  }
+  .booking-basket-button
+  {
+    margin: 1rem;
+  }
+  
+  /* Booking Form - Time Slots */
+  
+  .booking-time-slots-section
+  {
+    padding: 0;
+    margin: 0;
+  }
+  .booking-time-slot-item
+  {
+    padding: 0.5rem;
+    margin: 1rem;
+    background-image: linear-gradient(skyblue, darkblue);
+    border: 3px solid black;
+  }
+  .booking-time-slot-item.selected
+  {
+    background-image: linear-gradient(rgb(143, 223, 255), rgb(2, 2, 218));
+    border: 10px solid rgb(205, 182, 124);
+  }
+  
+  /* Booking Form - Extras */
+  .snack-item .extra-padding
+  {
+    padding: 2rem 2rem 2rem 0;
+  }
+  .snack-item
+  {
+    padding: 1rem;
+  }
+  .extras-total-price-section
+  {
+    position: relative;
+  }
+  .extras-total-price-section h4
+  {
+    position: absolute;
+    bottom: 0;
+  }
+  
+  /* Media Queries */
+  @media (max-width: 991px) {
+    #navbar-content {
+      margin-left: 1%;
+    }
+    #activities-carousel
+    {
+      width: 85%;
+    }
+  }
