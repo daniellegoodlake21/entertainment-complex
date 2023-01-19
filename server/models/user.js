@@ -132,7 +132,7 @@ class User
                 }
             }
         }
-        catch
+        catch (err)
         {
             return "error";
         }
@@ -156,9 +156,10 @@ class User
                 });
             });
         }
-        let result = await promise();
+ 
         try
         {
+            let result = await promise();
             this.id = result.insertId;
             dbConnection.disconnect();
             if (this.id === -1)
@@ -172,9 +173,16 @@ class User
                 return "success";  
             }
         }
-        catch
+        catch (err)
         {
-            return "alreadyExists"; // user with this email already exists
+            if (err.code === 'ER_DUP_ENTRY') 
+            {
+                return "alreadyExists"; // user with this email already exists
+            }
+            else
+            {
+                return "error";
+            }
         }
     }
 }

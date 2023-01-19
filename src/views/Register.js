@@ -1,26 +1,33 @@
-import React, {Component} from "react";
+import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import $ from "jquery";
-import axios from "axios";
-import PropTypes from 'prop-types';
 import useToken from "../components/useToken.js";
+import { useNavigate } from "react-router-dom";
 
-class Register extends Component
+async function registerUser(user)
 {
-    constructor(props) 
+    return fetch('http://localhost:3001/register',
     {
-        super(props);
+        method: 'POST',
+        headers:
+        {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(user)
+    }).then(data => data.json())
+}
 
-        this.state = {
-            email: "",
-            password: "",
-            confirmPassword: ""
-        };
-    }
-    validatePassword()
+export default function Register({setToken})
+{
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+    const [confirmPassword, setConfirmPassword] = useState();
+    const navigate = useNavigate();
+    
+    const validatePassword = () =>
     {
-      let password = this.state.password;
+      let password = $("#password")[0].value;
       if (password.length >= 8)
       {
         const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
@@ -57,39 +64,55 @@ class Register extends Component
       }
       return false;
     }
-    handleInputChange = e =>
+    const handleInputChange = async e =>
     {
-        this.setState({[e.target.name]: e.target.value}, () =>
+        const setChange = async () =>
         {
-          // check whether password and confirm password values match
-          let {password, confirmPassword} = this.state;
-          if (password.length > 0)
+          switch(e.target.name)
           {
-            if (password !== confirmPassword)
-            {
-              $(".invalid-message").removeAttr("hidden");
-              $(".invalid-message").text("Passwords do not match.");
-
-            }
-            else if (!this.validatePassword())
-            {
-              $(".invalid-message").removeAttr("hidden");
-              $(".invalid-message").text("Password must contain at least 1 uppercase letter, 1 lowercase letter and 1 number.")
-            
-            }
-            else
-            {
-              $(".invalid-message").attr("hidden", "true");
-            }
+            case "email":
+              setEmail(e.target.value);
+              break;
+            case "password":
+              setPassword(e.target.value);
+              break;
+            case "confirmPassword":
+              setConfirmPassword(e.target.value);
+              break;
+            default:
+              break;
           }
-        });
+        }
+
+        await setChange();
+        // check whether password and confirm password values match
+        let password = $("#password")[0].value;
+        let confirmPassword = $("#confirmPassword")[0].value;
+        if (password.length > 0)
+        {
+          if (password !== confirmPassword)
+          {
+            $(".invalid-message").removeAttr("hidden");
+            $(".invalid-message").text("Passwords do not match.");
+
+          }
+          else if (!validatePassword())
+          {
+            $(".invalid-message").removeAttr("hidden");
+            $(".invalid-message").text("Password must contain at least 1 uppercase letter, 1 lowercase letter and 1 number.")
+          
+          }
+          else
+          {
+            $(".invalid-message").attr("hidden", "true");
+          }
+        }
         
     }
-    handleSubmit = e =>
+    const handleSubmit = async e =>
     {
-        const {email, password, confirmPassword} = this.state;
         e.preventDefault();
-        if (!this.validatePassword())
+        if (!validatePassword())
         {
           return;
         }
@@ -99,64 +122,53 @@ class Register extends Component
         }
         else
         {
-          const user = { "email" : email, "password" : password };
-          axios({
-              url: "http://localhost:3000/register",
-              method: "POST",
-              data: user,
-              }).catch(err => 
-              {
-                  console.log(err);
-              }).then((res) => 
-              {
-                  if (res.data.result === "success")
-                  {
-                    
-                     useToken().setToken(res.data.token);
-                      //redirect("/my-account");
-                  }
-                  else if (res.data.result === "error")
-                  {
-                      $(".invalid-message").text("There was a problem trying to register you an account.");
-                      $(".invalid-message").removeAttr("hidden");
-                  }
-                  else if (res.data.result === "alreadyExists")
-                  {
-                      $(".invalid-message").text("A user with this email address already exists.");
-                      $(".invalid-message").removeAttr("hidden");
-                  }
-              });
+          let confirmedEmail = $("#email")[0].value;
+          let confirmedPassword = $("#password")[0].value;
+          const res = await registerUser({confirmedEmail, confirmedPassword});
+          if (res.result === "success")
+          {
+            
+              setToken(res.token);
+              $(".invalid-message").attr("hidden", "true");
+              navigate("/my-account");
           }
-    }
-    render()
-    {
-        return (
-        <div>
-            <h1 className="title text-light central-header">Register</h1>
-            <form onSubmit={this.handleSubmit} className="register-form">
-                <div>
-                    <label htmlFor="email">Email Address:</label>
-                    <br/>
-                    <input onKeyUp={this.handleInputChange} type="email" id="email" name="email" className="form-control form-control-rounded" required autoComplete="email"/>
-                </div>
-                <br/>
-                <div>
-                    <label htmlFor="password">Password:</label>
-                    <br/>
-                    <input onKeyUp={this.handleInputChange}  type="password" id="password" name="password" className="form-control form-control-rounded" required autoComplete="new-password"/>
-                    <br/>
-                </div>
-                <div>
-                    <label htmlFor="confirmPassword">Confirm Password:</label>
-                    <br/>
-                    <input onKeyUp={this.handleInputChange} type="password" id="confirmPassword" name="confirmPassword" className="form-control form-control-rounded" required/>
-                    <br/>
-                </div>
-                <br/>
-                <p className="invalid-message" hidden></p>
-                <input type="submit" name="btn-register" className="btn btn-lg btn-light form-control form-control-rounded" value="Register"/>
-            </form>
-        </div>);
-    }
+          else if (res.result === "error")
+          {
+              $(".invalid-message").text("There was a problem trying to register you an account.");
+              $(".invalid-message").removeAttr("hidden");
+          }
+          else if (res.result === "alreadyExists")
+          {
+              $(".invalid-message").text("A user with this email address already exists.");
+              $(".invalid-message").removeAttr("hidden");
+          }
+        }
+  }
+  return (
+  <div>
+      <h1 className="title text-light central-header">Register</h1>
+      <form onSubmit={handleSubmit} className="register-form">
+          <div>
+              <label htmlFor="email">Email Address:</label>
+              <br/>
+              <input onKeyUp={(e) => handleInputChange(e)} type="email" id="email" name="email" className="form-control form-control-rounded" required autoComplete="email"/>
+          </div>
+          <br/>
+          <div>
+              <label htmlFor="password">Password:</label>
+              <br/>
+              <input onKeyUp={(e) => handleInputChange(e)}  type="password" id="password" name="password" className="form-control form-control-rounded" required autoComplete="new-password"/>
+              <br/>
+          </div>
+          <div>
+              <label htmlFor="confirmPassword">Confirm Password:</label>
+              <br/>
+              <input onKeyUp={(e) => handleInputChange(e)} type="password" id="confirmPassword" name="confirmPassword" className="form-control form-control-rounded" required/>
+              <br/>
+          </div>
+          <br/>
+          <p className="invalid-message" hidden></p>
+          <input type="submit" name="btn-register" className="btn btn-lg btn-light form-control form-control-rounded" value="Register"/>
+      </form>
+  </div>);
 }
-export default Register;

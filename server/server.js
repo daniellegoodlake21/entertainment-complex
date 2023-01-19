@@ -6,7 +6,7 @@ config();
 
 const app = express();
 
-const corsOptions = {"origin" : "http://localhost:3001"}
+const corsOptions = {"origin" : "http://localhost:3000"}
 app.use(cors(corsOptions));
 
 app.use(express.static(".."));
@@ -33,14 +33,21 @@ app.post("/login", async (req, res) =>
 
 app.post("/register", async (req, res) =>
 {
-    let email = req.body.email;
-    let password = req.body.password;
+    let email = req.body.confirmedEmail;
+    let password = req.body.confirmedPassword;
     let user = new User(email, password);
     let result = await user.register();
-    res.send({"result" : result, "token": process.env.REACT_APP_TOKEN});
+    if (result === "success")
+    {
+        res.send({"result" : result, "token": process.env.REACT_APP_TOKEN});
+    }
+    else
+    {
+        res.send({"result" : result});
+    }
 })
 
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () =>
 {
     console.log("Server is running.");

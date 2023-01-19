@@ -9,7 +9,7 @@ class Home extends Component
   {
     return (
     <div>
-        <h1 className="title text-light central-header">Activities</h1>
+        <h1 className="title text-light central-header">Home</h1>
         <Carousel id="activities-carousel">
             <CarouselItem>
                 <img className="d-block w-100" src="images/ice-skating.jpg"  alt="Ice Skating"/>

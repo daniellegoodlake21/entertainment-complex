@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 async function loginUser(user)
 { 
-    return fetch('http://localhost:3000/login',
+    return fetch('http://localhost:3001/login',
     {
         method: 'POST',
         headers:
@@ -14,7 +14,7 @@ async function loginUser(user)
         'Content-Type': 'application/json'
         },
         body: JSON.stringify(user)
-    }).then(data => data.json())
+    }).then(data => data.json());
 }
 export default function Login({setToken})
 {
