@@ -36,6 +36,12 @@ body {
       font-weight: bold;
   }
   
+  /* Input */
+  input[type='email'], input[type='password']
+  {
+    font-variant: normal;
+  }
+
   /* Buttons */
   
   .btn
@@ -43,21 +49,31 @@ body {
     font-variant: small-caps;
     font-weight: bold;
   }
-  /* Login Form */
+  /* Login Form and Register Form */
   
-  .login-form
+  .login-form, .register-form
   {
     background-image: linear-gradient(skyblue, darkblue);
     border: 5px solid rgb(205, 182, 124);
     width: 30%;
-    height: 460px;
     margin: 2.5% auto 0;
     text-align: center;
     color: white;
     font-size: larger;
     padding: 5%;
   }
-  
+  .login-form
+  {
+    height: 460px;
+  }
+  .logout-form
+  {
+    height: 100px;
+  }
+  .register-form
+  {
+    height: 520px;
+  }
   
   /* Invalid Input Messages */
   
@@ -65,7 +81,7 @@ body {
   {
     color: white;
     font-weight: bold;
-    font-size: medium;
+    font-size: small;
   }
   /* Booking Form - General*/
   

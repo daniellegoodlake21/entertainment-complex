@@ -1,32 +1,78 @@
-import React, {Component} from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
-class Login extends Component
-{
-  render()
+import $ from "jquery";
+import { useNavigate } from "react-router-dom";
+
+async function loginUser(user)
+{ 
+    return fetch('http://localhost:3000/login',
     {
-        return (
+        method: 'POST',
+        headers:
+        {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(user)
+    }).then(data => data.json())
+}
+export default function Login({setToken})
+{
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+    const navigate = useNavigate();
+    const handleSubmit = async e =>
+    {
+
+        let confirmedEmail = $("#email")[0].value;
+        let confirmedPassword = $("#password")[0].value;
+        e.preventDefault();
+        const res = await loginUser({confirmedEmail, confirmedPassword});
+        let result = res.result;
+        if (result === "success")
+        {
+            setToken(res.token);
+            $(".invalid-message").attr("hidden", "true");
+            navigate('/my-account');
+        }
+        else
+        {
+            if (result === "incorrect")
+            {
+                $(".invalid-message").text("Incorrect password.");
+            }
+            else if (result === "doesNotExist")
+            {
+                $(".invalid-message").text("Sorry, a user with this email does not exist. Please check your input and try again.");
+            }
+            else if (result === "error")
+            {
+                (".invalid-message").text("There was a problem when logging in to your account.");
+            }  
+            $(".invalid-message").removeAttr("hidden");   
+        }
+
+    }
+    return (
         <div>
-            <h1 class="title text-light central-header">Login</h1>
-            <form action="/login" method="POST" class="login-form">
+            
+            <h1 className="title text-light central-header">Login</h1>
+            <form onSubmit={handleSubmit} className="login-form">
                 <div>
-                    <label for="email">Email Address:</label>
+                    <label htmlFor="email">Email Address:</label>
                     <br/>
-                    <input type="email" id="email" name="email" class="form-control form-control-rounded" required/>
+                    <input onChange={setEmail} type="email" id="email" name="email" className="form-control form-control-rounded" required autoComplete="email"/>
                 </div>
                 <br/>
                 <div>
-                    <label for="password">Password:</label>
+                    <label htmlFor="password">Password:</label>
                     <br/>
-                    <input type="password" id="password" name="password" class="form-control form-control-rounded" required/>
+                    <input onChange={setPassword} type="password" id="password" name="password" className="form-control form-control-rounded" required autoComplete="current-password"/>
                     <br/>
                 </div>
                 <br/>
-                <p class="invalid-message" hidden>Sorry, a user with this email and password does not exist. Please try again.</p>
-                <input type="submit" name="btn-login" class="btn btn-lg btn-light form-control form-control-rounded" value="Log In"/>
+                <p className="invalid-message" hidden></p>
+                <input type="submit" name="btn-login" className="btn btn-lg btn-light form-control form-control-rounded" value="Log In"/>
             </form>
         </div>);
-    };
 }
-export default Login;

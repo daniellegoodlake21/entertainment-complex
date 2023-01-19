@@ -1,5 +1,6 @@
 import { createConnection } from 'mysql';
-
+import {config} from 'dotenv';
+config({path: "./server/.env"});
 class DatabaseConnection
 {
     constructor()
@@ -7,18 +8,20 @@ class DatabaseConnection
         this.connection = null;
     }
 
-    connect()
+    async connect()
     {
         this.connection = createConnection({
             host: "localhost",
             user: "Danielle",
-            password: "Flame21!2005"
+            database: "entertainment-complex",
+            password: process.env.REACT_APP_DBPASSWORD
         });
         this.connection.connect(function(error)
         {
             if (error) throw error;
             console.log("Connected to database!");
         });
+        return this.connection;
     }  
     
     disconnect()
@@ -26,22 +29,7 @@ class DatabaseConnection
         this.connection.end();
         console.log("Disconnected");
     }
-
-    runQuery(sql)
-    {
-        this.connection.createQuery(sql, (error, results, fields) =>
-        {
-            if (error)
-            {
-                console.log("Error processing SQL query. SQL: " + sql + "\n" + "Error:" + error.message);
-                return;
-            }
-            else
-            {
-                return results;
-            }
-        });
-    }
 }
 
-dbConnection = new DatabaseConnection();
+const dbConnection = new DatabaseConnection();
+export default dbConnection;

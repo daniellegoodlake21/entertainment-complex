@@ -1,7 +1,6 @@
 import React, {Component} from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min";
 import { Carousel, CarouselItem } from "react-bootstrap";
 import "./styles.css";
 class Home extends Component

@@ -3,9 +3,10 @@ import React, {Component} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Nav, Button } from 'react-bootstrap';
 import "./styles.css";
+
 import $ from "jquery";
 
-class Layout extends Component
+class GuestLayout extends Component
 {
     toggleMenu()
     {
@@ -27,13 +28,10 @@ class Layout extends Component
                             <Link to="/" onClick={this.toggleMenu} className="nav-link text-light">Home</Link>
                         </li>
                         <li className="navbar-item my-nav-item col-sd-2 list-unstyled">
-                            <Link to="/logout"  onClick={this.toggleMenu} className="nav-link text-light">Logout</Link>
+                            <Link to="/login"  onClick={this.toggleMenu} className="nav-link text-light">Login</Link>
                         </li>
                         <li className="navbar-item my-nav-item col-sd-2 list-unstyled">
-                            <Link to="/my-account"  onClick={this.toggleMenu} className="nav-link text-light">My Account</Link>
-                        </li>
-                        <li className="navbar-item my-nav-item col-sd-2 list-unstyled">
-                            <Link to="/basket"  onClick={this.toggleMenu}  className="nav-link text-light">Basket</Link>
+                            <Link to="/register" onClick={this.toggleMenu} className="nav-link text-light">Register</Link>
                         </li>
                         <li className="navbar-item my-nav-item col-sd-2 list-unstyled">
                             <Link to="/ice-skating"  onClick={this.toggleMenu} className="nav-link text-light">Ice Skating</Link>
@@ -54,4 +52,4 @@ class Layout extends Component
     </>);
     }
 }
-export default Layout;
+export default GuestLayout;
