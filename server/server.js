@@ -4,6 +4,7 @@ import User from "./models/user.js";
 import BookableSessionManager from './models/bookable-session-manager.js';
 import {config} from 'dotenv';
 import jwt from 'jsonwebtoken';
+import BookingSnackManager from "./models/booking-snack-manager.js";
 config();
 
 const app = express();
@@ -82,7 +83,7 @@ app.post("/my-account", (req, res) =>
 })
 
 // retrieve bookable sessions. Guests can view bookable sessions so no need to receive and validate the token
-app.get("/bookable-session", async (req, res) =>
+app.get("/bookable-sessions", async (req, res) =>
 {
     let activity = req.query.activity;
     let date = req.query.selectedDate;
@@ -103,10 +104,24 @@ app.get("/bookable-session", async (req, res) =>
     {
         res.send({result});
     }
-    
 });
-
-
+// retrieve snacks for bookable sessions. Guests can view snacks for bookable sessions so no need to receive and validate the token
+app.get("/bookable-snacks", async (req, res) =>
+{
+    let activity = req.query.activity;
+    let snackManager = new BookingSnackManager(activity);
+    let results = await snackManager.getSnacks();
+    let result = results.result;
+    let snacks = results.snacks;
+    if (result === "success")
+    {
+        res.send({result, snacks});
+    }
+    else
+    {
+        res.send({result});
+    }
+});
 // run the server
 const PORT = 3001;
 app.listen(PORT, () =>

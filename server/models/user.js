@@ -34,7 +34,6 @@ class User
     async getUserSession()
     {
         let sql = "SELECT session_id FROM sessions WHERE user_id = " + this.id + ";";
-        let connection = await dbConnection.connect();
         let promise = () =>
         {
             return new Promise((resolve, reject) =>
@@ -65,24 +64,9 @@ class User
     {
         this.session_id = randomBytes(16).toString('base64');
         let sql = "INSERT INTO sessions VALUES ('" + this.session_id + "', " + this.id + ");";
-        let connection = await dbConnection.connect();
-        let promise = () => 
-        {
-            return new Promise((resolve, reject) =>
-            {
-                connection.query(sql, (error, result) =>
-                {
-                    if (error)
-                    {
-                        return reject(error);
-                    }
-                    return resolve(result);
-                });
-            });
-        }
         try
         {
-            promise();
+            await dbConnection.runQuery(sql);
             dbConnection.disconnect();
         }
         catch
@@ -95,25 +79,9 @@ class User
     async login()
     {
         let sql = "SELECT * FROM users WHERE email = '" + this.email + "';";
-        let connection = await dbConnection.connect();
-        let promise = () => 
-        {
-            return new Promise((resolve, reject) =>
-            {
-                connection.query(sql, (error, result) =>
-                {
-                    if (error)
-                    {
-                        console.log(error.message);
-                        return reject(error);
-                    }
-                    return resolve(result);
-                });
-            });
-        }
         try
         {
-            let result = await promise();
+            let result = await dbConnection.runQuery(sql);
             if (result.length === 0)
             {
                 return "doesNotExist";
@@ -149,25 +117,9 @@ class User
     async register()
     {
         let sql = "INSERT INTO users (email, password_hash) VALUES ('" + this.email + "', '" + this.passwordHash + "');";
-        let connection = await dbConnection.connect();
-        let promise = () => 
-        {
-            return new Promise((resolve, reject) =>
-            {
-                connection.query(sql, (error, result) =>
-                {
-                    if (error)
-                    {
-                        return reject(error);
-                    }
-                    return resolve(result);
-                });
-            });
-        }
- 
         try
         {
-            let result = await promise();
+            let result = await dbConnection.runQuery(sql);
             this.id = result.insertId;
             dbConnection.disconnect();
             if (this.id === -1)

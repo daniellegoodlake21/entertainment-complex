@@ -29,6 +29,23 @@ class DatabaseConnection
         this.connection.end();
         console.log("Disconnected");
     }
+
+    runQuery(sql)
+    {
+        return new Promise(async (resolve, reject) =>
+        {
+            await this.connect();
+            this.connection.query(sql, (error, result) =>
+            {
+                if (error)
+                {
+                    console.log(error.message);
+                    return reject(error);
+                }
+                return resolve(result);
+            });
+        });
+    }
 }
 
 const dbConnection = new DatabaseConnection();

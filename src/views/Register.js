@@ -15,7 +15,7 @@ async function registerUser(user)
         'Content-Type': 'application/json'
         },
         body: JSON.stringify(user)
-    }).then(data => data.json())
+    }).catch((err) => console.log(err)).then(data => data.json())
 }
 
 export default function Register({setToken})

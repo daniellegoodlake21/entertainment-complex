@@ -10,25 +10,10 @@ class BookableSessionManager
     
     async getBookableSessions()
     {
-        let connection = await dbConnection.connect();
         let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price FROM bookable_sessions WHERE activity = '" + this.activity + "' AND date = DATE('" + this.date + "') AND slots_remaining > 0;";
-        let promise = () => 
-        {
-            return new Promise((resolve, reject) =>
-            {
-                connection.query(sql, (error, result) =>
-                {
-                    if (error)
-                    {
-                        return reject(error);
-                    }
-                    return resolve(result);
-                });
-            });
-        }
         try
         {
-            let results = await promise();
+            let results = await dbConnection.runQuery(sql);
             dbConnection.disconnect();
             let sessions = [];
             for (let i = 0; i < results.length; i++)
