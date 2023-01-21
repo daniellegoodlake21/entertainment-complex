@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./views/Home.js";
 import Layout from "./views/Layout.js";
 import Logout from "./views/Logout.js";
@@ -11,7 +11,6 @@ import IceSkating from "./views/IceSkating.js";
 import Bowling from "./views/Bowling.js";
 import Theatre from "./views/Theatre.js";
 import Cinema from "./views/Cinema.js";
-import NoPage from "./views/NoPage.js";
 import GuestLayout from "./views/GuestLayout.js";
 import useToken from "./components/useToken.js";
 function App()
@@ -28,7 +27,7 @@ function App()
 
                 <Route index element={<Home/>}/>
                 <Route path="ice-skating" element={<IceSkating/>}/>
-                <Route path="bowling" element={<Bowling/>}/>
+                <Route path="my-account" element={<MyAccount/>}/>
                 <Route path="theatre" element={<Theatre/>}/>
                 <Route path="cinema" element={<Cinema/>}/>
               </Route>

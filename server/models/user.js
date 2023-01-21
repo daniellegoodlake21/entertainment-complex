@@ -80,8 +80,16 @@ class User
                 });
             });
         }
-        promise();
-        dbConnection.disconnect();
+        try
+        {
+            promise();
+            dbConnection.disconnect();
+        }
+        catch
+        {
+            console.log("Error generating user session");
+        }
+        
     }
 
     async login()

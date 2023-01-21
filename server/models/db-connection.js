@@ -14,7 +14,7 @@ class DatabaseConnection
             host: "localhost",
             user: "Danielle",
             database: "entertainment-complex",
-            password: process.env.REACT_APP_DBPASSWORD
+            password: process.env.DB_PASS
         });
         this.connection.connect(function(error)
         {
