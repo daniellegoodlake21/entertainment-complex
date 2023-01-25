@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import $ from "jquery";
-import useToken from "../components/useToken.js";
 import { useNavigate } from "react-router-dom";
 
 async function registerUser(user)

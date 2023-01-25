@@ -34,25 +34,12 @@ class User
     async getUserSession()
     {
         let sql = "SELECT session_id FROM sessions WHERE user_id = " + this.id + ";";
-        let promise = () =>
-        {
-            return new Promise((resolve, reject) =>
-            {
-                connection.query(sql, (error, result) =>
-                {
-                    if (error)
-                    {
-                        return reject(error);
-                    }
-                    return resolve(result);
-                });
-            });
-        }
-        let result = await promise();
+
         try
         {
+            let result = await dbConnection.runQuery(sql);
             this.session_id = result[0].session_id;
-            dbConnection.disconnect();
+            
         }
         catch
         {
@@ -67,7 +54,7 @@ class User
         try
         {
             await dbConnection.runQuery(sql);
-            dbConnection.disconnect();
+            
         }
         catch
         {
@@ -87,7 +74,7 @@ class User
                 return "doesNotExist";
             }
             let user = result[0];
-            dbConnection.disconnect();
+            
             this.id = user.user_id;
             this.email = user.email;
             this.passwordHash = user.password_hash;
@@ -110,6 +97,7 @@ class User
         }
         catch (err)
         {
+            console.log(err);
             return "error";
         }
     }
@@ -121,7 +109,7 @@ class User
         {
             let result = await dbConnection.runQuery(sql);
             this.id = result.insertId;
-            dbConnection.disconnect();
+            
             if (this.id === -1)
             {
 

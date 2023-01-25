@@ -15,13 +15,13 @@ function SnacksList({snacks, setSnacks})
     {
         return;
     }
-    return (<ul id="snacks-list" className="container-fluid">
+    return (<div id="snacks-list" className="container-fluid">
                 <div className="row">
                     {
                         snacks.map(currentSnack => <Snack key={currentSnack.snackId} snack={currentSnack}/>)
                     }
                 </div>
-            </ul>);
+            </div>);
 }
 SnacksList.propTypes = 
 {

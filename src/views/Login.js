@@ -47,7 +47,7 @@ export default function Login({setToken})
             }
             else if (result === "error")
             {
-                (".invalid-message").text("There was a problem when logging in to your account.");
+                $(".invalid-message").text("There was a problem when logging in to your account.");
             }  
             $(".invalid-message").removeAttr("hidden");   
         }

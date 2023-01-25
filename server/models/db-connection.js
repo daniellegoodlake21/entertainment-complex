@@ -1,6 +1,6 @@
 import { createConnection } from 'mysql';
 import {config} from 'dotenv';
-config({path: "./server/.env"});
+config();
 class DatabaseConnection
 {
     constructor()
@@ -10,26 +10,32 @@ class DatabaseConnection
 
     async connect()
     {
-        this.connection = createConnection({
-            host: "localhost",
-            user: "Danielle",
-            database: "entertainment-complex",
-            password: process.env.DB_PASS
-        });
-        this.connection.connect(function(error)
+        if (!this.connection)
         {
-            if (error) throw error;
-            console.log("Connected to database!");
-        });
-        return this.connection;
+            this.connection = createConnection({
+                host: "localhost",
+                user: "Danielle",
+                database: "entertainment-complex",
+                password: process.env.DB_PASS
+            });
+            this.connection.connect(function(error)
+            {
+                if (error) throw error;
+                console.log("Connected to database!");
+            });  
+        }
+
     }  
     
     disconnect()
     {
-        this.connection.end();
-        console.log("Disconnected");
+        if (this.connection)
+        {
+            this.connection.end();
+            this.connection = null;
+            console.log("Disconnected");
+        }
     }
-
     runQuery(sql)
     {
         return new Promise(async (resolve, reject) =>
@@ -37,6 +43,7 @@ class DatabaseConnection
             await this.connect();
             this.connection.query(sql, (error, result) =>
             {
+                this.disconnect();
                 if (error)
                 {
                     console.log(error.message);

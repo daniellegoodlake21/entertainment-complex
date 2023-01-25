@@ -34,6 +34,9 @@ class GuestLayout extends Component
                             <Link to="/register" onClick={this.toggleMenu} className="nav-link text-light">Register</Link>
                         </li>
                         <li className="navbar-item my-nav-item col-sd-2 list-unstyled">
+                            <Link to="/basket"  onClick={this.toggleMenu}  className="nav-link text-light">Basket</Link>
+                        </li>
+                        <li className="navbar-item my-nav-item col-sd-2 list-unstyled">
                             <Link to="/ice-skating"  onClick={this.toggleMenu} className="nav-link text-light">Ice Skating</Link>
                         </li>
                         <li className="navbar-item my-nav-item col-sd-2 list-unstyled">

@@ -36,9 +36,8 @@ function validateToken(token)
 
 app.post("/login", async (req, res) =>
 {
-    console.log(req.body);
-    let email = req.data.confirmedEmail;
-    let password = req.data.confirmedPassword;
+    let email = req.body.confirmedEmail;
+    let password = req.body.confirmedPassword;
     let user = new User(email, password);
     let result = await user.login();
     if (result === "success")
@@ -94,16 +93,7 @@ app.get("/bookable-sessions", async (req, res) =>
     }
     let bookableSessionManager = new BookableSessionManager(activity, date);
     let results = await bookableSessionManager.getBookableSessions();
-    let result = results.result;
-    let sessions = results.sessions;
-    if (result === "success")
-    {
-        res.send({result, sessions});
-    }
-    else
-    {
-        res.send({result});
-    }
+    res.send(results);
 });
 // retrieve snacks for bookable sessions. Guests can view snacks for bookable sessions so no need to receive and validate the token
 app.get("/bookable-snacks", async (req, res) =>
@@ -111,17 +101,29 @@ app.get("/bookable-snacks", async (req, res) =>
     let activity = req.query.activity;
     let snackManager = new BookingSnackManager(activity);
     let results = await snackManager.getSnacks();
-    let result = results.result;
-    let snacks = results.snacks;
-    if (result === "success")
-    {
-        res.send({result, snacks});
-    }
-    else
-    {
-        res.send({result});
-    }
+    res.send(results);
 });
+// retrieve snack name by its id
+app.get("/get-snack-details-from-id", async (req, res) =>
+{
+    let snackId = req.query.snackId;
+    let snackManager = new BookingSnackManager();
+    let results = await snackManager.getSnackDetails(snackId);
+    res.send(results);
+});
+// retrieve booking sessions associated with local storage basket
+app.get("/load-associated-booking-session", async (req, res) =>
+{
+    let sessionId = req.query.sessionId;
+    let bookableSessionManager = new BookableSessionManager();
+    let results = await bookableSessionManager.getBookableSessionFromBasket(sessionId);
+    res.send(results);
+});
+// add bookable session to basket
+app.post("/bookable-sessions", async (req, res) =>
+{
+    res.send({"result" : "error"});
+})
 // run the server
 const PORT = 3001;
 app.listen(PORT, () =>

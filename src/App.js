@@ -12,7 +12,7 @@ import Bowling from "./views/Bowling.js";
 import Theatre from "./views/Theatre.js";
 import Cinema from "./views/Cinema.js";
 import GuestLayout from "./views/GuestLayout.js";
-import useToken from "./components/useToken.js";
+import useToken from "./hooks/useToken.js";
 function App()
 {
   const {token, setToken} = useToken();
@@ -27,7 +27,7 @@ function App()
 
                 <Route index element={<Home/>}/>
                 <Route path="ice-skating" element={<IceSkating/>}/>
-                <Route path="my-account" element={<MyAccount/>}/>
+                <Route path="basket" element={<Basket/>}/>
                 <Route path="theatre" element={<Theatre/>}/>
                 <Route path="cinema" element={<Cinema/>}/>
               </Route>
@@ -42,7 +42,7 @@ function App()
           <BrowserRouter>
             <Routes>
               <Route element={<Layout/>}>
-                <Route path="/basket" element={<Basket />} />
+                <Route path="/basket" element={<Basket/>} />
                 <Route path="/my-account" element={<MyAccount />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route index element={<Home/>}/>
