@@ -83,8 +83,9 @@ body {
     font-weight: bold;
     font-size: small;
   }
+
   /* Booking Form - General AND Basket - General*/
-  
+
   .customize-booking-basics, .customize-booking-extras, .add-booking-to-basket-form
   {
     padding: 1rem;
@@ -165,6 +166,28 @@ body {
   {
     position: absolute;
     bottom: 0;
+  }
+  /* Lists */
+  li
+  {
+    list-style: "⭐ ";
+  }
+  /* Purchase Form */
+  .login-required-purchase-message
+  {
+    color: red;
+  }
+  .purchase-form
+  {
+    width: 50%;
+    padding: 2rem;
+    border: 2px solid black;
+    background-color: white;
+    margin: 3% auto;
+  }
+  .purchase-btn
+  {
+    margin: 2rem 0;
   }
   /* Media Queries */
   @media (max-width: 991px) {

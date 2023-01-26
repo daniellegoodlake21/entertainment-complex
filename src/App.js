@@ -27,7 +27,7 @@ function App()
 
                 <Route index element={<Home/>}/>
                 <Route path="ice-skating" element={<IceSkating/>}/>
-                <Route path="basket" element={<Basket/>}/>
+                <Route path="basket" element={<Basket token={token}/>}/>
                 <Route path="theatre" element={<Theatre/>}/>
                 <Route path="cinema" element={<Cinema/>}/>
               </Route>
@@ -42,7 +42,7 @@ function App()
           <BrowserRouter>
             <Routes>
               <Route element={<Layout/>}>
-                <Route path="/basket" element={<Basket/>} />
+                <Route path="/basket" element={<Basket token={token}/>} />
                 <Route path="/my-account" element={<MyAccount />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route index element={<Home/>}/>

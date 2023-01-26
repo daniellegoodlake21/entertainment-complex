@@ -128,6 +128,7 @@ export default function Register({setToken})
           {
             
               setToken(res.token);
+              localStorage.setItem("userId", res.userId);
               $(".invalid-message").attr("hidden", "true");
               navigate("/my-account");
           }

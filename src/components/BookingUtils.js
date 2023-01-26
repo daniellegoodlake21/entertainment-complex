@@ -1,19 +1,5 @@
 import $ from "jquery";
 
-// add to basket
-async function AddBookingToBasket(bookingDetails)
-{
-    return fetch("http://localhost:3001/bookable-sessions",
-    {
-        method: "POST",
-        headers:
-        {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(bookingDetails)
-    }).catch((err) => console.log(err)).then(data => data.json());
-}
-
 // get bookable sessions for an activity for a specific date
 export async function GetBookableSessions(activity, selectedDate)
 { 
@@ -52,7 +38,7 @@ export function UpdateTotalPrice()
     $("#total-price").text(totalPrice);
 }
 
-// validate user input, call LoginOrRegister, and then call AddBookingToBasket if the input is valid
+// validate user input, call LoginOrRegister, and then add basket item to localStorage if the input is valid
 export async function AddToBasket(e, activity, {setBasket}, {navigate})
 {
     e.preventDefault();
@@ -95,10 +81,31 @@ export async function AddToBasket(e, activity, {setBasket}, {navigate})
             }
         }
         // add the booking to the basket
-        let token = localStorage.getItem("token");
         const basketData = {sessionId, activity, adults, children, snackData};
-        setBasket(basketData);
+        setBasket(basketData); /* inside this custom hook's setBasket function, 
+        the current basket item (basketData) is APPENDED to the existing ones
+        instead of overwriting them, so you can have multiple bookings in your basket at once */
         navigate("/basket");
        
     }
+}
+
+export async function SaveBooking(bookings, isConfirmed)
+{
+    let url = "http://localhost:3001/bookable-sessions";
+    if (!isConfirmed)
+    {
+        url = "http://localhost:3001/bookable-sessions-basket";
+    }
+    let token = localStorage.getItem("token");
+    let userId = localStorage.getItem("userId");
+    return fetch(url,
+    {
+        method: "POST",
+        headers:
+        {
+        "Content-Type": "application/json"
+        },
+        body: JSON.stringify({bookings, isConfirmed, token, userId})
+    }).catch((err) => console.log(err)).then(data => data.json());      
 }

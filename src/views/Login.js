@@ -21,7 +21,7 @@ export default function Login({setToken})
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
     const navigate = useNavigate();
-    const handleSubmit = async e =>
+    const handleSubmit = async (e) =>
     {
 
         let confirmedEmail = $("#email")[0].value;
@@ -32,6 +32,7 @@ export default function Login({setToken})
         if (result === "success")
         {
             setToken(res.token);
+            localStorage.setItem("userId", res.userId);
             $(".invalid-message").attr("hidden", "true");
             navigate('/my-account');
         }

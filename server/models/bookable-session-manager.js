@@ -7,6 +7,8 @@ class BookableSessionManager
         this.activity = activity;
         this.date = date;
     }
+    
+    /* Get a single bookable session by its id */
     async getBookableSessionFromBasket(sessionId)
     {
         let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price, date FROM bookable_sessions WHERE session_id = " + sessionId + ";";
@@ -21,12 +23,12 @@ class BookableSessionManager
                 childPrice : results[0].child_price,
                 adultPrice : results[0].adult_price
             };
-            return {"result" : "success", session};
+            return {result : "success", session};
         }
         catch (err)
         {
-            console.log(err.message);
-            return {"result": "error"};
+            console.log(err);
+            return {result: "error"};
         }
     }
     async getBookableSessions()
@@ -50,12 +52,12 @@ class BookableSessionManager
   
                 sessions.push(session);
             }
-            return {"result" : "success", sessions};
+            return {result : "success", sessions};
         }
         catch (err)
         {
-            console.log(err.message);
-            return {"result": "error"};
+            console.log(err);
+            return {result: "error"};
         }
     }
 }

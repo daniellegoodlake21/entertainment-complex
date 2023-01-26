@@ -28,41 +28,6 @@ class User
         return bcrypt.compare(this.password, this.passwordHash);
     }
 
-
-
-    // gets the pre-existing user session from the database
-    async getUserSession()
-    {
-        let sql = "SELECT session_id FROM sessions WHERE user_id = " + this.id + ";";
-
-        try
-        {
-            let result = await dbConnection.runQuery(sql);
-            this.session_id = result[0].session_id;
-            
-        }
-        catch
-        {
-        }
-    }
-
-    // creates a new user session in the database
-    async generateUserSession()
-    {
-        this.session_id = randomBytes(16).toString('base64');
-        let sql = "INSERT INTO sessions VALUES ('" + this.session_id + "', " + this.id + ");";
-        try
-        {
-            await dbConnection.runQuery(sql);
-            
-        }
-        catch
-        {
-            console.log("Error generating user session");
-        }
-        
-    }
-
     async login()
     {
         let sql = "SELECT * FROM users WHERE email = '" + this.email + "';";
@@ -80,25 +45,17 @@ class User
             this.passwordHash = user.password_hash;
             if (!await this.verifyPassword())
             {
-                return "incorrect";
+                return {result: "incorrect"};
             }
             else
-            {
-                await this.getUserSession();
-                if (!this.session_id)
-                {
-                    return "error";
-                }
-                else
-                {
-                    return "success";
-                }
+            {              
+                return {result : "success", "userId" : this.id};
             }
         }
         catch (err)
         {
             console.log(err);
-            return "error";
+            return {result : "error"};
         }
     }
 
@@ -113,23 +70,22 @@ class User
             if (this.id === -1)
             {
 
-                return "error";
+                return {result : "error"};
             }
             else
             {
-                await this.generateUserSession();
-                return "success";  
+                return {result : "success", "userId" : this.id};  
             }
         }
         catch (err)
         {
             if (err.code === 'ER_DUP_ENTRY') 
             {
-                return "alreadyExists"; // user with this email already exists
+                return {result : "alreadyExists"}; // user with this email already exists
             }
             else
             {
-                return "error";
+                return {result : "error"};
             }
         }
     }

@@ -18,15 +18,15 @@ function Booking({booking})
         <p>Snacks:</p>
         <ul>
             {
-                booking.snacks.map(snack=>
+                booking.snackData.map(snack=>
                     {
                         keyIndex++;
-                        return <li key={keyIndex}>{snack.snackName} X{snack.snackQuantity}</li>;
+                        return <li key={keyIndex}>{snack.snackName} x{snack.snackQuantity}</li>;
                     })
             }
         </ul>        
         <p className="no-snacks-message"></p>      
-        <p className="booking-data-item-price">{booking.price}</p>
+        <h4 className="booking-data-item-price">Price: £<span className="price">{booking.totalPrice.toFixed(2)}</span></h4>
 
     </div>)
 }

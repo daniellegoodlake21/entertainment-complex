@@ -63,7 +63,7 @@ function IceSkating()
             let bookableSessionsData = await GetBookableSessions(activity, e.target.value);
             if (bookableSessionsData.result === "success")
             {
-                // remove bookable session that have already been added to this user's basket
+                // do not display bookable sessions that have already been added to this user's basket
                 // first get the basket's session ids...
                 let basketSessionIds = [];
                 let basket = localStorage.getItem("basket");
@@ -83,12 +83,10 @@ function IceSkating()
                         if (basketSessionIds.includes(Number(sessionId)))
                         {
                             bookableSessionsData.sessions.splice(i, 1);
-                            console.log(bookableSessionsData.sessions);
                         }
                     }  
                 }
-                
-                // now dispaly the results and corresponding time slots message
+                // now display the results and corresponding time slots message
                 if (bookableSessionsData.sessions.length > 0)
                 {
                     $(".time-slots-message").text("Select a Time Slot:");

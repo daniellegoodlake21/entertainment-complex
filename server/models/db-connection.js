@@ -46,7 +46,7 @@ class DatabaseConnection
                 this.disconnect();
                 if (error)
                 {
-                    console.log(error.message);
+                    console.log(error);
                     return reject(error);
                 }
                 return resolve(result);
