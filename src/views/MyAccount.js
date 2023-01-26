@@ -64,7 +64,7 @@ export default function MyAccount()
         bookings = bookings.map((booking) => 
         {
           i++;
-          return (<Booking key={i} booking={booking}/>);
+          return (<Booking key={i} index={i} booking={booking} setBookingData={setBookingData}/>);
         });
         setBookingData(bookings);
       }
@@ -86,10 +86,10 @@ export default function MyAccount()
   // run on page load
   useEffect(() =>{
     loadPage();
-  }, []);
+  }, [bookingData]);
   return (<div className="confirmed-bookings-section">
         <h1 className="title text-light central-header">My Bookings</h1>
-        <br/>
+        <h5 className="booking-cancellation-status-message text-light central-header"></h5>
         <h4 className="confirmed-bookings-message text-light central-header"></h4>
         <div id="confirmed-bookings">{bookingData}</div>
     </div>);

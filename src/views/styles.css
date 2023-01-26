@@ -88,7 +88,7 @@ body {
 
   .basket-error-message
   {
-    width: 30%;
+    width: 50%;
     margin: auto;
   }
   .customize-booking-basics, .customize-booking-extras, .add-booking-to-basket-form
@@ -108,11 +108,22 @@ body {
   }
   
   /* Booking Form - Time Slots, and Basket/My Account */
-  
+  .cancel-booking-btn
+  {
+    position: absolute;
+    right: 2.5%;
+    top: 5%;
+    width: 30%;
+  }
   .booking-time-slots-section
   {
     padding: 0;
     margin: 0;
+  }
+  .booking-data-item.added-booking
+  {
+    position: relative;
+    margin: 5rem;
   }
   .booking-time-slot-item, .booking-data-item
   {
@@ -180,7 +191,7 @@ body {
   /* Purchase Form */
   .login-required-purchase-message
   {
-    color: red;
+    font-weight: bold;
   }
   .purchase-form
   {

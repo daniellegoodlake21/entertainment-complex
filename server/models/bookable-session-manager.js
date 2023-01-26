@@ -31,6 +31,8 @@ class BookableSessionManager
             return {result: "error"};
         }
     }
+
+    /* get all bookable sessions of the specified activity type */
     async getBookableSessions()
     {
         let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price FROM bookable_sessions WHERE activity = '" + this.activity + "' AND date = DATE('" + this.date + "') AND slots_remaining > 0;";
@@ -58,6 +60,22 @@ class BookableSessionManager
         {
             console.log(err);
             return {result: "error"};
+        }
+    }
+
+    /* update a bookable session to re-add freed up slots when a booking was deleted */
+    async increaseSlots(slotsToAdd, bookingId)
+    {
+        let sql = "UPDATE bookable_sessions, bookings SET slots_remaining = (slots_remaining + " + slotsToAdd + ") WHERE bookable_sessions.session_id = bookings.session_id AND bookings.booking_id = " + bookingId + ";";
+        try
+        {
+            await dbConnection.runQuery(sql);
+            return true;
+        }
+        catch (err)
+        {
+            console.log(err);
+            return false;
         }
     }
 }

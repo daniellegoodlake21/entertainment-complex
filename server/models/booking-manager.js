@@ -1,5 +1,7 @@
 import dbConnection from "./db-connection.js";
 import BookingSnackManager from "./booking-snack-manager.js";
+import BookableSessionManager from "./bookable-session-manager.js";
+
 class BookingManager
 {
     constructor(userId)
@@ -101,7 +103,6 @@ class BookingManager
                 try
                 {
                     let result = await dbConnection.runQuery(sql);
-                    console.log(result);
                     let snackManager = new BookingSnackManager();
                     for (let j = 0; j < booking.snackData.length; j++)
                     {
@@ -119,5 +120,78 @@ class BookingManager
         }
         return {"result": "success"};
     }
+
+    /* Get used slots from booking ID so that they can be freed up when a booking is deleted */
+    async getSlotsUsed(bookingId)
+    {
+        let sql = "SELECT number_of_children, number_of_adults FROM bookings WHERE bookings.booking_id = " + bookingId + ";";
+        try
+        {
+            let results = await dbConnection.runQuery(sql);
+            return results[0].number_of_children + results[0].number_of_adults;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
+    async isConfirmed(bookingId)
+    {
+        let sql = "SELECT confirmed FROM bookings WHERE booking_id = " + bookingId + ";";
+        try
+        {
+            let results = await dbConnection.runQuery(sql);
+            if (results[0].confirmed)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    /* delete a booking (either in-basket or confirmed) and its associated booking-snack-links */
+    async deleteBooking(bookingId)
+    {    
+        try
+        {
+            if (await this.isConfirmed(bookingId))
+            {
+                // free up the slots previously used by the booking
+                let usedSlots = await this.getSlotsUsed(bookingId);
+                if (usedSlots > -1)
+                {
+                    let bookableSessionManager = new BookableSessionManager();
+                    let increasedSlotsSuccessfully = await bookableSessionManager.increaseSlots(usedSlots, bookingId);
+                    if (!increasedSlotsSuccessfully)
+                    {
+                        return {result: "error"};
+                    }
+                }
+                else
+                {
+                    return {result: "error"};
+                }
+            }
+            // now delete the booking and its related data
+            let sql = "DELETE FROM bookings WHERE booking_id = " + bookingId + ";";
+            await dbConnection.runQuery(sql);
+            sql = "DELETE FROM bookings_snacks_links WHERE booking_id = " + bookingId + ";";
+            await dbConnection.runQuery(sql);
+            return {result: "success"};
+        }
+        catch (err)
+        {
+            console.log(err);
+            return {result: "error"};
+        }
+    }
+
 }
 export default BookingManager;

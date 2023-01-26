@@ -1,49 +1,10 @@
 import React, {useEffect, useState} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
-import Booking from "../components/Booking.js";
 import $ from 'jquery';
 import { useNavigate } from "react-router-dom";
-import { SaveBooking, getLinkedSnacksDetails } from "../components/BookingUtils.js";
+import { SaveBooking, loadFromLocalStorage, loadFromDatabase, loadBookings, getTotalPrice} from "../components/BookingUtils.js";
 
-// get the data which is the same for all users for each session (e.g., the date, time, cost per adult and cost per child etc)
-const loadBookingSessionDataAssociatedWithBooking = async (sessionId) =>
-{
-  return fetch("http://localhost:3001/load-associated-booking-session?sessionId="+sessionId,
-  {
-      method: "GET",
-      headers:
-      {
-      "Content-Type": "application/json"
-      },
-  }).catch((err) => console.log(err)).then(data => data.json());
-}
-// get the snack price and snack name from the id only
-const getSnackDetailsFromId = async (snackId) =>
-{
-  return fetch("http://localhost:3001/get-snack-details-from-id?snackId=" + snackId,
-  {
-      method: "GET",
-      headers:
-      {
-      "Content-Type": "application/json"
-      },
-  }).catch((err) => console.log(err)).then(data => data.json());
-}
-/* if the local storage's basket does not exist, the user may have previously saved basket data from when
-they were last logged in, so retrieve that */
-const retrieveBookingsFromDatabase = async (token, userId) =>
-{
-  return fetch("http://localhost:3001/bookings",
-  {
-      method: "POST",
-      headers:
-      {
-      "Content-Type": "application/json"
-      },
-      body: JSON.stringify({token, userId})
-  }).catch((err) => console.log(err)).then(data =>data.json());
-} 
 export default function Basket({token})
 {
     const [basketData, setBasketData] = useState();
@@ -88,7 +49,7 @@ export default function Basket({token})
     const handleSubmit = async (e) =>
     {
       e.preventDefault();
-      let bookings = await loadFromDatabase();
+      let bookings = await loadFromDatabase(token);
       let bookingConfirmed = await saveBookingData(true, bookings);
       localStorage.setItem("basket", null);
       if (bookingConfirmed)
@@ -96,177 +57,39 @@ export default function Basket({token})
         navigate("/my-account");
       }
     }
-    /* if the user is logged out retrieve basket data from local storage */
-    const loadFromLocalStorage = async () =>
-    {
-      let basketString = localStorage.getItem("basket");
-      let basketItems = null;
-      let bookings = [];
-      try
-      {
-        basketItems = JSON.parse(basketString).items;
-        if (basketItems.length === 0)
-        {
-          $(".purchase-btn").attr("disabled", "disabled");
-        }
-        for (let i = 0; i < basketItems.length; i++)
-        {
-          let basketItem = basketItems[i];
-          let res = await loadBookingSessionDataAssociatedWithBooking(basketItem.sessionId);
-          if (res.result === "success")
-          {
-            $(".basket-error-message").text("");
-            let sessionId = res.session.sessionId;
-            let time = res.session.time;
-            let childPrice = res.session.childPrice;
-            let adultPrice = res.session.adultPrice;
-            let date = res.session.date;
-            let adults = basketItem.adults;
-            let children = basketItem.children;
-            let activity = basketItem.activity;
-            let totalPrice = (childPrice * children) + (adultPrice * adults);
-            let snackData = [];
-            for (let j = 0; j < basketItem.snackData.length; j++)
-            {
-              let snackId = basketItem.snackData[j].snackId;
-              let result = await getSnackDetailsFromId(snackId);
-              if (result.result === "success")
-              {
-                let snack = result.snack;
-                snack.snackQuantity = basketItem.snackData[j].snackQuantity;
-                totalPrice += snack.snackPrice * snack.snackQuantity;
-                snackData.push(snack);
-              }
-              else if (result.result === "error")
-              {
-                $(".basket-error-message").text("There was a problem accessing booking extras.");
-              }   
-            }
-            let bookingData = {sessionId, time, childPrice, adultPrice, date, adults, children, activity, snackData, totalPrice};
-            bookings.push(bookingData);
-          }
-        }
-      }    
-      catch
-      {
-        $(".purchase-btn").attr("disabled", "disabled");
-        if (token)
-        {
-        }
-        else
-        {
-          $(".basket-error-message").text("You have no bookings currently in your basket. If you are logged out and have bookings you have previously placed in your basket, please log in to retrieve them.");
-        }
-         }
-      return bookings;
-    }
-    /* load the bookings from the database */
-    const loadFromDatabase = async () =>
-    {
-        let bookings = [];
-        let userId = localStorage.getItem("userId");
-        let res = await retrieveBookingsFromDatabase(token, userId);
-        if (res.result === "success")
-        {
-          bookings = res.bookings;
-          if (bookings.length === 0)
-          {
-            $(".purchase-btn").attr("disabled", "disabled");
-            $(".basket-error-message").text("You have no bookings currently in your basket.");
-          }
-          else
-          {
-            $(".purchase-btn").removeAttr("disabled");
-          }
-          for (let i = 0; i < bookings.length; i++)
-          {
-              let bookingId = bookings[i].bookingId;
-              bookings[i].totalPrice = (bookings[i].childPrice * bookings[i].children) + (bookings[i].adultPrice * bookings[i].adults);
-              let userId = localStorage.getItem("userId");
-              let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
-              if (snackData.result === "success")
-              {
-                bookings[i].snackData = snackData.snackData;
-                for (let j = 0; j < bookings[i].snackData.length; j++)
-                {
-                  let snackPrice = bookings[i].snackData[j].snackPrice;
-                  let snackQuantity = bookings[i].snackData[j].snackQuantity;
-                  bookings[i].totalPrice += snackPrice * snackQuantity;
-                }
-              }
-              else if (snackData.result === "error")
-              {
-                $(".basket-error-message").text("There was a problem accessing snacks within bookings in you basket.");
-              }
-            
-          }
-        }
-        else if (res.result === "error")
-        {
-          $(".basket-error-message").text("There was a problem accessing your basket.");
-        }
-        return bookings;
-    }
-    // load the bookings in the basket
-    const loadBookings = async (bookings) =>
-    {
-      let i = 0;
-      let basketData = bookings.map((booking) => 
-      {
-        i++;
-        return (<Booking key={i} booking={booking}/>);
-      });
-      setBasketData(basketData);
-      getTotalPrice(bookings);
-    }
     
     const loadPage = async () =>
     {
-        let bookings = await loadFromLocalStorage();
+        let bookings = await loadFromLocalStorage(token);
         if (!token)
         {
+          if (bookings.all.length > 0)
+          {
 
-          $(".login-required-purchase-message").text("Please log in or register to complete your purchase.");
+            $(".login-required-purchase-message").text("Please log in or register to complete your purchase.");
+          }
           $(".purchase-btn").attr("disabled", "disabled");
         }
         else
         {
           $(".login-required-purchase-message").text("");
-          let success = await saveBookingData(false, bookings);
+          let success = await saveBookingData(false, bookings.all);
           if (success)
           {
-            bookings = await loadFromDatabase();
+            bookings = await loadFromDatabase(token);
           }
         }
-        loadBookings(bookings);
+        loadBookings(bookings, setBasketData);
+        getTotalPrice(bookings.all, setTotalPrice);
     }
     // run on page load
     useEffect(() =>{
       loadPage();
-    }, []);
-    // get total price
-    const getTotalPrice = (bookings) =>
-    {
-      let totalPrice = 0;
-      for (let i = 0; i < bookings.length; i++)
-      {
-        let booking = bookings[i];
-        let subtotal = (booking.adultPrice * booking.adults) + (booking.childPrice * booking.children);
-        for (let j = 0; j < booking.snackData.length; j++)
-        {
-          let snackPrice = booking.snackData[j].snackPrice;
-          let snackQuantity = booking.snackData[j].snackQuantity;
-          subtotal += snackPrice * snackQuantity;
-        }
-        totalPrice += subtotal;
-      }
-      totalPrice = totalPrice.toFixed(2);
-      setTotalPrice(totalPrice);
-    }
+    }, [setBasketData]);
     return (
       <div className="basket-section">
         <h1 className="title text-light central-header">Basket</h1>
-
+        <h5 className="booking-cancellation-status-message text-light central-header"></h5>
         <h5 className="basket-error-message text-light central-header"></h5>
         <div id="basket-items-section">{basketData}</div>
         <form onSubmit={handleSubmit} className="purchase-form">

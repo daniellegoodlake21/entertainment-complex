@@ -70,21 +70,26 @@ function IceSkating()
                 if (basket)
                 {
                     basket = JSON.parse(basket);
-                    let basketItems = basket.items; 
-                    for (let i = 0; i < basketItems.length; i++)
+                    if (basket)
                     {
-                        basketSessionIds.push(Number(basketItems[i].sessionId));
-                    }
-                    // ...then check for matches
-                    let length = bookableSessionsData.sessions.length;
-                    for (let i = 0; i < length; i++)
-                    {
-                        let sessionId = bookableSessionsData.sessions[i].session_id;
-                        if (basketSessionIds.includes(Number(sessionId)))
+                        
+                        let basketItems = basket.items; 
+                        for (let i = 0; i < basketItems.length; i++)
                         {
-                            bookableSessionsData.sessions.splice(i, 1);
+                            basketSessionIds.push(Number(basketItems[i].sessionId));
                         }
-                    }  
+                        // ...then check for matches
+                        let length = bookableSessionsData.sessions.length;
+                        for (let i = 0; i < length; i++)
+                        {
+                            let sessionId = bookableSessionsData.sessions[i].session_id;
+                            if (basketSessionIds.includes(Number(sessionId)))
+                            {
+                                bookableSessionsData.sessions.splice(i, 1);
+                            }
+                        }  
+                    }
+                   
                 }
                 // now display the results and corresponding time slots message
                 if (bookableSessionsData.sessions.length > 0)

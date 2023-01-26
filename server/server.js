@@ -211,6 +211,27 @@ app.post("/bookable-sessions-basket", async (req, res) =>
     }
 });
 
+// cancel a booking, it can be either in-basket or confirmed
+app.post("/cancel-booking", async (req, res) =>
+{
+    let userToken = req.body.token;
+    let userId = req.body.userId;
+    let bookingId = req.body.bookingId;
+    if (validateToken(userToken))
+    {
+        if (validateToken(userToken))
+        {
+            let bookingManager = new BookingManager(userId);
+            let results = await bookingManager.deleteBooking(bookingId);
+            res.send(results);
+        }
+        else
+        {
+            res.send({result: "error"});
+        }
+    }
+});
+
 // run the server
 const PORT = 3001;
 app.listen(PORT, () =>
