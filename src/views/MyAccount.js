@@ -1,42 +1,96 @@
-import React, {Component} from "react";
+import React, {useState, useEffect} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
-
-async function testTokenValidation()
+import Booking from "../components/Booking.js";
+import $ from "jquery";
+import { getLinkedSnacksDetails } from "../components/BookingUtils.js";
+const retrieveConfirmedBookings = async (token, userId) =>
 {
-  const token = localStorage.getItem("token");
-  return fetch('http://localhost:3001/my-account',
+  return fetch("http://localhost:3001/confirmed-bookings",
   {
-      method: 'POST',
+      method: "POST",
       headers:
       {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json"
       },
-      body: JSON.stringify({"token" : token})
-  }).then(data => data.json());
-}
+      body: JSON.stringify({token, userId})
+  }).catch((err) => console.log(err)).then(data =>data.json());
+} 
 
 export default function MyAccount()
 {
 
-  const handleSubmit = async (e) =>
+  const [bookingData, setBookingData] = useState();
+  // load confirmed bookings
+  const loadPage = async () =>
   {
-    e.preventDefault();
-    let res = await testTokenValidation();
+    let bookings = [];
+    let token = localStorage.getItem("token");
+    let userId = localStorage.getItem("userId");
+    let res = await retrieveConfirmedBookings(token, userId);
     if (res.result === "success")
     {
-      alert("Validation successful!")
+      $(".confirmed-bookings-message").text("");
+      if (res.bookings.length > 0)
+      {
+        // retrieve the associated snack data and price for each booking
+        bookings = res.bookings;
+        for (let i = 0; i < bookings.length; i++)
+        {
+          let booking = bookings[i];
+          let totalPrice = (booking.childPrice * booking.children) + (booking.adultPrice * booking.adults);
+          // snack data
+          let bookingId = booking.bookingId;
+          let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
+          if (snackData.result === "success")
+          {
+            bookings[i].snackData = snackData.snackData;
+            for (let j = 0; j < booking.snackData.length; j++)
+            {
+              let snackPrice = booking.snackData[j].snackPrice;
+              let snackQuantity = booking.snackData[j].snackQuantity;
+              totalPrice += snackPrice * snackQuantity;
+            }
+            bookings[i].totalPrice = totalPrice;
+          }
+          else
+          {
+            $(".confirmed-bookings-message").text("There was a problem retrieving snacks within your confirmed bookings.");
+          }
+      
+        }
+        // map the data to Booking components
+        let i = 0;
+        bookings = bookings.map((booking) => 
+        {
+          i++;
+          return (<Booking key={i} booking={booking}/>);
+        });
+        setBookingData(bookings);
+      }
+      else
+      {
+        $(".confirmed-bookings-message").text("You currently have no confirmed bookings.");
+        setBookingData([]);
+      }
+
     }
-    else if (res.result === "loginRequired")
+    else
     {
-      alert("Login required");
+      $(".confirmed-bookings-message").text("There was a problem retrieving your confirmed bookings.");
+      setBookingData([]);
     }
+
+
   }
-  return (<div className="container">
-        <h1 className="title text-light">Test token validation?</h1>
+  // run on page load
+  useEffect(() =>{
+    loadPage();
+  }, []);
+  return (<div className="confirmed-bookings-section">
+        <h1 className="title text-light central-header">My Bookings</h1>
         <br/>
-        <form onSubmit={handleSubmit} className="logout-form">
-            <input type="submit" name="btn-logout" className="btn btn-lg btn-light form-control form-control-rounded" value="Test"/>
-        </form>
+        <h4 className="confirmed-bookings-message text-light central-header"></h4>
+        <div id="confirmed-bookings">{bookingData}</div>
     </div>);
 }

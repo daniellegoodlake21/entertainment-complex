@@ -4,7 +4,7 @@ import "./styles.css";
 import Booking from "../components/Booking.js";
 import $ from 'jquery';
 import { useNavigate } from "react-router-dom";
-import { SaveBooking } from "../components/BookingUtils.js";
+import { SaveBooking, getLinkedSnacksDetails } from "../components/BookingUtils.js";
 
 // get the data which is the same for all users for each session (e.g., the date, time, cost per adult and cost per child etc)
 const loadBookingSessionDataAssociatedWithBooking = async (sessionId) =>
@@ -16,19 +16,6 @@ const loadBookingSessionDataAssociatedWithBooking = async (sessionId) =>
       {
       "Content-Type": "application/json"
       },
-  }).catch((err) => console.log(err)).then(data => data.json());
-}
-// get the snack price, quantity and name from the booking id
-const getLinkedSnacksDetails = async (bookingId, token, userId) =>
-{ 
-  return fetch("http://localhost:3001/get-linked-snacks-details",
-  {
-      method: "POST",
-      headers:
-      {
-      "Content-Type": "application/json"
-      },
-      body: JSON.stringify({bookingId, token, userId})
   }).catch((err) => console.log(err)).then(data => data.json());
 }
 // get the snack price and snack name from the id only
@@ -94,14 +81,14 @@ export default function Basket({token})
           $(".login-required-purchase-message").text("There was a problem saving your basket.");
         }  
       }
-
       return false;
     }
 
     // when the user confirms the bookings successfully, redirect them to My Account
     const handleSubmit = async (e) =>
     {
-      let bookings = await loadBookings();
+      e.preventDefault();
+      let bookings = await loadFromDatabase();
       let bookingConfirmed = await saveBookingData(true, bookings);
       localStorage.setItem("basket", null);
       if (bookingConfirmed)
@@ -173,7 +160,7 @@ export default function Basket({token})
          }
       return bookings;
     }
-    // load the bookings
+    /* load the bookings from the database */
     const loadFromDatabase = async () =>
     {
         let bookings = [];
@@ -200,7 +187,12 @@ export default function Basket({token})
               if (snackData.result === "success")
               {
                 bookings[i].snackData = snackData.snackData;
-                console.log(bookings[i]);
+                for (let j = 0; j < bookings[i].snackData.length; j++)
+                {
+                  let snackPrice = bookings[i].snackData[j].snackPrice;
+                  let snackQuantity = bookings[i].snackData[j].snackQuantity;
+                  bookings[i].totalPrice += snackPrice * snackQuantity;
+                }
               }
               else if (snackData.result === "error")
               {
@@ -225,8 +217,7 @@ export default function Basket({token})
         return (<Booking key={i} booking={booking}/>);
       });
       setBasketData(basketData);
-      getTotalPrice();
-      return bookings;
+      getTotalPrice(bookings);
     }
     
     const loadPage = async () =>
@@ -254,15 +245,20 @@ export default function Basket({token})
       loadPage();
     }, []);
     // get total price
-    const getTotalPrice = () =>
+    const getTotalPrice = (bookings) =>
     {
       let totalPrice = 0;
-      let allItems = $("#basket-items-section").children(".booking-data-item");
-      for (let i = 0; i < allItems.length; i++)
+      for (let i = 0; i < bookings.length; i++)
       {
-        let priceElement = $("#basket-items-section .booking-data-item:nth-child("+String(i+1)+") .booking-data-item-price .price").text();
-        let price = Number(priceElement);
-        totalPrice += price;
+        let booking = bookings[i];
+        let subtotal = (booking.adultPrice * booking.adults) + (booking.childPrice * booking.children);
+        for (let j = 0; j < booking.snackData.length; j++)
+        {
+          let snackPrice = booking.snackData[j].snackPrice;
+          let snackQuantity = booking.snackData[j].snackQuantity;
+          subtotal += snackPrice * snackQuantity;
+        }
+        totalPrice += subtotal;
       }
       totalPrice = totalPrice.toFixed(2);
       setTotalPrice(totalPrice);

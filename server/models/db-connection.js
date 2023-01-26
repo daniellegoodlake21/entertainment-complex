@@ -21,7 +21,6 @@ class DatabaseConnection
             this.connection.connect(function(error)
             {
                 if (error) throw error;
-                console.log("Connected to database!");
             });  
         }
 
@@ -33,7 +32,6 @@ class DatabaseConnection
         {
             this.connection.end();
             this.connection = null;
-            console.log("Disconnected");
         }
     }
     runQuery(sql)

@@ -90,6 +90,20 @@ export async function AddToBasket(e, activity, {setBasket}, {navigate})
     }
 }
 
+// get the snack price, quantity and name from the booking id
+export async function getLinkedSnacksDetails(bookingId, token, userId)
+{ 
+  return fetch("http://localhost:3001/get-linked-snacks-details",
+  {
+      method: "POST",
+      headers:
+      {
+      "Content-Type": "application/json"
+      },
+      body: JSON.stringify({bookingId, token, userId})
+  }).catch((err) => console.log(err)).then(data => data.json());
+}
+// save the booking either to be displayed in the basket (if isConfirmed = false) or the 'My Account' page's confirmed bookings
 export async function SaveBooking(bookings, isConfirmed)
 {
     let url = "http://localhost:3001/bookable-sessions";

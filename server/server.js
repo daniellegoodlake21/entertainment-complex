@@ -144,7 +144,22 @@ app.get("/load-associated-booking-session", async (req, res) =>
     let results = await bookableSessionManager.getBookableSessionFromBasket(sessionId);
     res.send(results);
 });
-
+// retrieve all confirmed bookings data
+app.post("/confirmed-bookings", async (req, res) =>
+{
+    let userToken = req.body.token;
+    let userId = req.body.userId;
+    if (validateToken(userToken))
+    {
+        let bookingManager = new BookingManager(userId);
+        let results = await bookingManager.getBookings(true);
+        res.send(results);
+    }
+    else
+    {
+        res.send({result: "error"});
+    }
+});
 // retrieve all relevant bookings-in-basket data
 app.post("/bookings", async (req, res) =>
 {
@@ -170,7 +185,7 @@ app.post("/bookable-sessions", async (req, res) =>
     {
         let bookingManager = new BookingManager(userId);
         let results = await bookingManager.confirmBookings();
-        res.send({results});
+        res.send(results);
     }
     else
     {

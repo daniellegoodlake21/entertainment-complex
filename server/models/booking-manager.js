@@ -19,7 +19,7 @@ class BookingManager
             let bookings = [];
             for (let i = 0; i < results.length; i++)
             {
-                // snacks are retrieved separately in Basket.js for each booking ID so they are not handled here
+                // snacks are retrieved separately in Basket.js and MyAccount.js for each booking ID so they are not handled here
                 let booking = {
                     bookingId: results[i].booking_id,
                     sessionId: results[i].session_id,

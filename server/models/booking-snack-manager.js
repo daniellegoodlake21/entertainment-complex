@@ -10,7 +10,7 @@ class BookingSnackManager
     // get snack names, prices and quantities based on linked booking id
     async getLinkedSnacksDetails(bookingId, userId)
     {
-        let sql = "SELECT booking_snacks.snack_id, snack_name, snack_price, quantity FROM booking_snacks, bookings_snacks_links, bookings WHERE bookings_snacks_links.booking_id = " + bookingId + " AND booking_snacks.snack_id = bookings_snacks_links.snack_id AND bookings.user_id = " + userId + ";";
+        let sql = "SELECT booking_snacks.snack_id, snack_name, snack_price, quantity FROM booking_snacks, bookings_snacks_links, bookings WHERE bookings_snacks_links.booking_id = " + bookingId + " AND booking_snacks.snack_id = bookings_snacks_links.snack_id AND bookings.user_id = " + userId + " AND bookings.booking_id = bookings_snacks_links.booking_id;";
         try
         {
             let results = await dbConnection.runQuery(sql);
@@ -79,18 +79,48 @@ class BookingSnackManager
             return {result: "error"};
         }
     }
+    /* Check snack booking link not already in basket. */
+    async snackNotInBasket(bookingId, snackId)
+    {
+        let sql = "SELECT booking_id, snack_id FROM bookings_snacks_links WHERE booking_id = " + bookingId + " AND snack_id = " + snackId + ";";
+        try
+        {
+            let results = await dbConnection.runQuery(sql);
+            if (results.length > 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        catch (err)
+        {
+            console.log(err);
+            // return false because the snack booking links should not be saved in the case of an error
+            return false;
+        }
+    }
     /* Insert snack booking link into table */
     async saveSnackBookingLink(bookingId, snackId, quantity)
     {
-        let sql = "INSERT INTO bookings_snacks_links VALUES (" + bookingId + ", " + snackId + ", " + quantity + ");";
-        try
+        if (await this.snackNotInBasket(bookingId, snackId))
         {
-            await dbConnection.runQuery(sql);
-            return {result: "success"};
+            let sql = "INSERT INTO bookings_snacks_links VALUES (" + bookingId + ", " + snackId + ", " + quantity + ");";
+            try
+            {
+                await dbConnection.runQuery(sql);
+                return {result: "success"};
+            }
+            catch
+            {
+                return {result: "error"};
+            }      
         }
-        catch
+        else
         {
-            return {result: "error"};
+            return {result: "success"};
         }
 
     }
