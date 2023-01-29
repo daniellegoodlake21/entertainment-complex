@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import $ from "jquery";
-import { UpdateTotalPrice } from './BookingUtils.js';
+import { updateTotalPrice } from '../utils/BookableSessionUtils.js';
 
 function Snack({snack})
 {
@@ -19,7 +19,7 @@ function Snack({snack})
         }
         totalSnacksPrice = totalSnacksPrice.toFixed(2);
         $("#booking-extras-price").text(totalSnacksPrice);
-        UpdateTotalPrice();
+        updateTotalPrice();
     }
     let imagePath = "images/" + snack.snackImageRef + ".png";
     let snackId = "snack" + snack.snackId;

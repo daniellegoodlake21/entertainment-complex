@@ -35,7 +35,7 @@ class BookableSessionManager
     /* get all bookable sessions of the specified activity type */
     async getBookableSessions()
     {
-        let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price FROM bookable_sessions WHERE activity = '" + this.activity + "' AND date = DATE('" + this.date + "') AND slots_remaining > 0;";
+        let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price FROM bookable_sessions WHERE activity = '" + this.activity + "' AND date = DATE('" + this.date + "') AND slots_remaining > 0 ORDER BY time ASC;";
         try
         {
             let results = await dbConnection.runQuery(sql);

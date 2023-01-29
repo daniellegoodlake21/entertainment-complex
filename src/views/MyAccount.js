@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import Booking from "../components/Booking.js";
 import $ from "jquery";
-import { getLinkedSnacksDetails } from "../components/BookingUtils.js";
+import { getLinkedSnacksDetails } from "../utils/BookingUtils.js";
 const retrieveConfirmedBookings = async (token, userId) =>
 {
   return fetch("http://localhost:3001/confirmed-bookings",

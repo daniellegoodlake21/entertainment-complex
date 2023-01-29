@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import $ from 'jquery';
 import { useNavigate } from "react-router-dom";
-import { SaveBooking, loadFromLocalStorage, loadFromDatabase, loadBookings, getTotalPrice} from "../components/BookingUtils.js";
+import { saveBooking, loadFromLocalStorage, loadFromDatabase, loadBookings, getTotalPrice} from "../utils/BookingUtils.js";
 
 export default function Basket({token})
 {
@@ -15,7 +15,7 @@ export default function Basket({token})
      if isConfirmed is false it will only add it to the basket, otherwise it will be viewable as a confirmed booking in My Account */
     const saveBookingData = async (isConfirmed, bookings) =>
     {
-      let res = await SaveBooking(bookings, isConfirmed);
+      let res = await saveBooking(bookings, isConfirmed);
       if (res.result === "success")
       {
         return true;
@@ -79,13 +79,13 @@ export default function Basket({token})
             bookings = await loadFromDatabase(token);
           }
         }
-        loadBookings(bookings, setBasketData);
+        loadBookings(bookings, setBasketData, setTotalPrice);
         getTotalPrice(bookings.all, setTotalPrice);
     }
     // run on page load
     useEffect(() =>{
       loadPage();
-    }, [setBasketData]);
+    }, []);
     return (
       <div className="basket-section">
         <h1 className="title text-light central-header">Basket</h1>

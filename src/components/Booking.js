@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import $ from 'jquery';
-import { loadFromLocalStorage, loadFromDatabase, loadBookings } from './BookingUtils.js';
+import { loadFromLocalStorage, loadFromDatabase, loadBookings } from '../utils/BookingUtils.js';
 import { useEffect } from 'react';
 const cancelBooking = async (bookingId, token, userId) =>
 {
@@ -14,7 +14,7 @@ const cancelBooking = async (bookingId, token, userId) =>
         body: JSON.stringify({bookingId, token, userId})
     }).catch((err) => console.log(err)).then(data => data.json());
 }
-function Booking({index, booking, setBookingData})
+function Booking({index, booking, setBookingData, setTotalPrice})
 {
     const handleSubmit = async (e) =>
     {
@@ -40,25 +40,29 @@ function Booking({index, booking, setBookingData})
                 }
             }
             localStorage.setItem("basket", JSON.stringify(basketItems));  
-            console.log(basketItems);
             let bookings = await loadFromLocalStorage(token);
-            loadBookings(bookings, setBookingData);  
+            loadBookings(bookings, setBookingData, setTotalPrice);  
         }
         // remove from database if logged in (if not it will not do anything on the server side as the token will be invalid)
 
         let userId = localStorage.getItem("userId");
         let bookingId = booking.bookingId;
         if (!bookingId)
-        {
+        {  
+            setTotalPrice("0.00");
             return; // in this case it hasn't been loaded from the database as retrieval from the database results in defining a booking id
         }
         let res = await cancelBooking(bookingId, token, userId);
         if (res.result === "success")
         {
             let bookings = await loadFromDatabase(token);
-            loadBookings(bookings, setBookingData);
+            loadBookings(bookings, setBookingData, setTotalPrice);
             $(".booking-cancellation-status-message").text("Your booking has been cancelled.");
-           
+            let oldTotalPrice = Number($("#total-price").text());
+            if (setTotalPrice)
+            {
+                setTotalPrice(oldTotalPrice - booking.totalPrice);    
+            }
         }
         else if (res.result === "error")
         {
@@ -82,6 +86,21 @@ function Booking({index, booking, setBookingData})
     }, []);
     
     let key = "booking-" + index;
+
+    let additionalDetails = () =>
+    {
+        if (booking.activity === "bowling")
+        {
+            let railsUpText = booking.additionalDetails.rails ? "Rails Up" : "Rails Down";
+            return <div>
+                        <h4>Bowling Options:</h4>
+                        <p>Number of Games: <span>{booking.additionalDetails.games}</span></p>
+                        <p>{railsUpText}</p>
+                    </div>;
+        }
+        return null;
+    }
+
     return (
     <div className="booking-data-item added-booking" id={key}>
         <h3>{activity}</h3>
@@ -89,8 +108,9 @@ function Booking({index, booking, setBookingData})
         <h4>{date.getDate()}/{date.getMonth()+1}/{date.getFullYear()} at {booking.time.slice(0, 5)}</h4>
         <p>Number of adults attending: {booking.adults}</p>
         <p>Number of children attending: {booking.children}</p>
+        <div>{additionalDetails()}</div>
         <h4>Booking Extras:</h4>
-        <p>Snacks:</p>
+        <h5>Snacks:</h5>
         <ul>
             {
                 booking.snackData.map(snack=>

@@ -1,6 +1,6 @@
 import $ from "jquery";
 import PropTypes from 'prop-types';
-import { UpdateTotalPrice } from "./BookingUtils.js";
+import { updateTotalPrice } from "../utils/BookableSessionUtils.js";
 
 function BookableSession({session})
 {
@@ -10,9 +10,13 @@ function BookableSession({session})
     {
         // update booking price
         let sessionPrice = (adults * session.adultPrice) + (children * session.childPrice);
+        if ($("#price-multiplier").length === 1)
+        {
+            sessionPrice = sessionPrice * $("#price-multiplier").first().val();
+        }
         sessionPrice = sessionPrice.toFixed(2);
         $("#basic-package-price").text(sessionPrice);
-        UpdateTotalPrice();
+        updateTotalPrice();
     }
     // select session
     const selectSession = e =>
@@ -29,7 +33,9 @@ function BookableSession({session})
         // display the number of attendees input and label
         $(e.target).parent().siblings(".attendees-outer").removeAttr("hidden");
         outer.siblings(".booking-time-slot-outer").children(".attendees-outer").attr("hidden", "true");
-        updateBookingPrice(1, 0);
+        let adults = $(".number-of-adults").first().find("option:selected").first().val();
+        let children = $(".number-of-children").first().find("option:selected").first().val();
+        updateBookingPrice(adults, children);
         $(".invalid-booking-message").text("");
     };
 

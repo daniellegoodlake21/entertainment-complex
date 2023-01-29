@@ -10,7 +10,6 @@ class User
         this.email = email;
         this.password = password;
         this.passwordHash = this.hashPassword();
-        this.session_id = null;
     }
 
 
@@ -36,7 +35,7 @@ class User
             let result = await dbConnection.runQuery(sql);
             if (result.length === 0)
             {
-                return "doesNotExist";
+                return {result: "doesNotExist"};
             }
             let user = result[0];
             

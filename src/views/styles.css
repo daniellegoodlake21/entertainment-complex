@@ -94,13 +94,28 @@ body {
   .customize-booking-basics, .customize-booking-extras, .add-booking-to-basket-form
   {
     padding: 1rem;
-    margin: 2rem;
+    margin: 1rem;
     overflow-y: scroll;
     display: inline-block;
     background-color: white;
     border: 2px solid black;
     width: 26rem;
     height: 34rem;
+  }
+  .add-booking-to-basket-form.small, .customize-bowling
+  {
+    padding: 1rem;
+    margin: 1em;
+    overflow-y: scroll;
+    display: inline-block;
+    background-color: white;
+    border: 2px solid black;
+    width: 26rem;
+    height: 16rem;
+  }
+  .add-booking-to-basket-form.small
+  {
+    margin-top: 0.6rem;
   }
   .booking-basket-button
   {

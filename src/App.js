@@ -24,10 +24,10 @@ function App()
               <Route element={<GuestLayout/>}>
                 <Route path="login" element={<Login setToken={setToken}/>}/>
                 <Route path="register" element={<Register setToken={setToken}/>}/>
-
                 <Route index element={<Home/>}/>
-                <Route path="ice-skating" element={<IceSkating/>}/>
                 <Route path="basket" element={<Basket token={token}/>}/>
+                <Route path="ice-skating" element={<IceSkating/>}/>
+                <Route path="bowling" element={<Bowling/>}/>
                 <Route path="theatre" element={<Theatre/>}/>
                 <Route path="cinema" element={<Cinema/>}/>
               </Route>

@@ -9,6 +9,40 @@ class BookingManager
         this.userId = userId;
     }
 
+    /* Retrieves bowling-specific additional details linked to this booking ID */
+    async retrieveBowlingData(bookingId)
+    {
+
+        let sql = "SELECT * FROM bowling WHERE booking_id = " + bookingId + ";";
+        try 
+        {
+            let results = await dbConnection.runQuery(sql);
+            let bowlingData = {
+                rails: results[0].rails_up,
+                games: results[0].games
+            }
+            return bowlingData;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    /* Saves bowling-specific additional details linked to this booking ID */
+    async saveBowlingData(bookingId, games, rails)
+    {
+        let sql = "INSERT INTO bowling VALUES (" + bookingId + ", " + rails + ", " + games + ");";
+        try
+        {
+            await dbConnection.runQuery(sql);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+
+    }
         
     /* Get all relevant booking data */
     async getBookings(confirmed)
@@ -32,8 +66,10 @@ class BookingManager
                     date: results[i].date,
                     activity: results[i].activity,
                     adults: results[i].number_of_adults,
-                    children: results[i].number_of_children
+                    children: results[i].number_of_children,
                 }
+                let res = await this.retrieveBowlingData(booking.bookingId);
+                booking.additionalDetails = res;
                 bookings.push(booking);
             }
             return {result : "success", bookings};
@@ -109,6 +145,16 @@ class BookingManager
                         let snack = booking.snackData[j];
                         await snackManager.saveSnackBookingLink(result.insertId, snack.snackId, snack.snackQuantity);
                     }
+                    // if this booking has activity-specific additional details, then save them also
+                    if (booking.activity === "bowling")
+                    {
+                        let bookingId = result.insertId;
+                        let res = await this.saveBowlingData(bookingId, booking.additionalDetails.games, booking.additionalDetails.rails);
+                        if (!res)
+                        {
+                            return {result: "error"};
+                        }
+                    }
                     return {result: "success"};
                 }
                 catch (err)
@@ -118,7 +164,7 @@ class BookingManager
                 } 
             }
         }
-        return {"result": "success"};
+        return {result: "success"};
     }
 
     /* Get used slots from booking ID so that they can be freed up when a booking is deleted */
@@ -136,6 +182,7 @@ class BookingManager
         }
     }
 
+    /* Returns true if the user has confirmed the booking, or false if still in the basket */
     async isConfirmed(bookingId)
     {
         let sql = "SELECT confirmed FROM bookings WHERE booking_id = " + bookingId + ";";
@@ -156,7 +203,7 @@ class BookingManager
             return false;
         }
     }
-    /* delete a booking (either in-basket or confirmed) and its associated booking-snack-links */
+    /* Deletes a booking (either in-basket or confirmed) and its associated booking-snack-links */
     async deleteBooking(bookingId)
     {    
         try
@@ -184,6 +231,8 @@ class BookingManager
             await dbConnection.runQuery(sql);
             sql = "DELETE FROM bookings_snacks_links WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
+            sql = "DELETE FROM bowling WHERE booking_id = " + bookingId + ";";
+            await dbConnection.runQuery(sql);
             return {result: "success"};
         }
         catch (err)
@@ -192,6 +241,5 @@ class BookingManager
             return {result: "error"};
         }
     }
-
 }
 export default BookingManager;
