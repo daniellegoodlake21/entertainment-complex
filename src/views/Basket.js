@@ -58,29 +58,49 @@ export default function Basket({token})
       }
     }
     
+
+    // merge local storage bookings in basket with database bookings
+    const addLocalStorageBasketToDatabaseBasket = async (localBookings, token) =>
+    {
+      // get session ids from database bookings
+      let databaseBookings = await loadFromDatabase(token);
+      let databaseBookingSessionIds = [];
+      for (let i = 0; i < databaseBookings.length; i++)
+      {
+        databaseBookingSessionIds.push(databaseBookings[i].sessionId);
+      }
+      // check each local booking and if it does not already exist in the database then add it to the combined bookings
+      for (let i = 0; i < localBookings.length; i++)
+      {
+        if (!databaseBookingSessionIds.includes(localBookings[i].sessionId))
+        {
+          databaseBookings.push(localBookings[i]);
+        }
+      }
+      return databaseBookings;
+    }
+
     const loadPage = async () =>
     {
         let bookings = await loadFromLocalStorage(token);
         if (!token)
         {
-          if (bookings.all.length > 0)
+          if (bookings.length > 0)
           {
-
             $(".login-required-purchase-message").text("Please log in or register to complete your purchase.");
           }
           $(".purchase-btn").attr("disabled", "disabled");
         }
         else
         {
+          await saveBookingData(false, bookings);
           $(".login-required-purchase-message").text("");
-          let success = await saveBookingData(false, bookings.all);
-          if (success)
-          {
-            bookings = await loadFromDatabase(token);
-          }
+          bookings = await addLocalStorageBasketToDatabaseBasket(bookings, token);
+          await saveBookingData(false, bookings);
+
         }
         loadBookings(bookings, setBasketData, setTotalPrice);
-        getTotalPrice(bookings.all, setTotalPrice);
+        getTotalPrice(bookings, setTotalPrice);
     }
     // run on page load
     useEffect(() =>{

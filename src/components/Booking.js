@@ -61,7 +61,7 @@ function Booking({index, booking, setBookingData, setTotalPrice})
             let oldTotalPrice = Number($("#total-price").text());
             if (setTotalPrice)
             {
-                setTotalPrice(oldTotalPrice - booking.totalPrice);    
+                setTotalPrice((oldTotalPrice - booking.totalPrice).toFixed(2));    
             }
         }
         else if (res.result === "error")

@@ -1,5 +1,4 @@
 import $ from "jquery";
-import { act } from "react-dom/test-utils";
 /* Shared functions for all pages that let you view bookable sessions
 and add them to your basket. For example, ice skating and bowling. */
 
@@ -191,16 +190,24 @@ export async function retrieveBookableSessions(e, activity, setBSessions)
                     {
                         basketSessionIds.push(Number(basketItems[i].sessionId));
                     }
-                    // ...then check for matches
-                    let length = bookableSessionsData.sessions.length;
-                    for (let i = 0; i < length; i++)
+                    // ...then check for matches (bookable sessions already added to user's basket)
+                    let sessionsToRemoveIndexes = [];
+                    for (let i = 0; i < bookableSessionsData.sessions.length; i++)
                     {
                         let sessionId = bookableSessionsData.sessions[i].sessionId;
                         if (basketSessionIds.includes(Number(sessionId)))
                         {
-                            bookableSessionsData.sessions.splice(i, 1);
+                            sessionsToRemoveIndexes.push(i);
                         }
                     }  
+                    // remove matches
+                    for (let i = 0; i < bookableSessionsData.sessions.length; i++)
+                    {
+                        if (sessionsToRemoveIndexes.includes(i))
+                        {
+                            bookableSessionsData.sessions.splice(i, 1);
+                        }
+                    }
                 }
                 
             }

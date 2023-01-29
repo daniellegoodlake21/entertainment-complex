@@ -103,7 +103,7 @@ class BookingManager
     (Date is not stored in bookings, rather the bookable session it is linked to). */
     async bookingNotInBasket(booking)
     {
-        let sql = "SELECT user_id, number_of_adults, number_of_children, activity, confirmed FROM bookings WHERE user_id = " + this.userId + " AND number_of_adults = " + booking.adults + " AND number_of_children = " + booking.children + " AND activity = '" + booking.activity +  "' AND confirmed = 0;";
+        let sql = "SELECT session_id FROM bookings WHERE user_id = " + this.userId + " AND session_id = " + booking.sessionId + " AND confirmed = 0";
         try
         {
             let results = await dbConnection.runQuery(sql);
@@ -132,9 +132,13 @@ class BookingManager
     {
         for (let i = 0; i < bookings.length; i++)
         {
-            if (await this.bookingNotInBasket(bookings[i]))
+            let booking = bookings[i];
+            console.log("Booking");
+            console.log(booking)
+            console.log("End of Booking");
+            if (await this.bookingNotInBasket(booking))
             {
-                let booking = bookings[i];
+                console.log("Booking not in basket");
                 let sql = "INSERT INTO bookings (user_id, number_of_adults, number_of_children, activity, confirmed, session_id) VALUES (" + this.userId +" ," + booking.adults + ", " + booking.children + ", '" + booking.activity + "', 0, " + booking.sessionId + ");";
                 try
                 {

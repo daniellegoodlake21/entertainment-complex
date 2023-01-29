@@ -143,7 +143,7 @@ export async function loadFromLocalStorage(token)
             $(".basket-error-message").text("You have no bookings currently in your basket. If you are logged out and have bookings you have previously placed in your basket, please log in to retrieve them.");
         }
     }
-    return {all: bookings};
+    return bookings;
 }
  /* load the bookings from the database */
  export async function loadFromDatabase(token)
@@ -194,7 +194,7 @@ export async function loadFromLocalStorage(token)
     {
     $(".basket-error-message").text("There was a problem accessing your basket.");
     }
-    return {all: bookings};
+    return bookings;
 }
 
 // get total price of all items in the basket
@@ -221,14 +221,13 @@ export async function getTotalPrice(bookings, setTotalPrice)
     setTotalPrice(totalPrice);
 }
 // load the bookings in the basket
-export async function loadBookings(bookings, setBasketData, setTotalPrice,)
+export function loadBookings(bookings, setBasketData, setTotalPrice)
 {
     let i = 0;
-    let basketData = bookings.all.map((booking) => 
+    let basketData = bookings.map(booking => 
     {
         i++;
         return (<Booking key={i} index={i} booking={booking} setBookingData={setBasketData} setTotalPrice={setTotalPrice}/>);
     });
     setBasketData(basketData);
-
 }

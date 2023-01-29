@@ -1,10 +1,10 @@
 import $ from "jquery";
 import PropTypes from 'prop-types';
+import { useEffect } from "react";
 import { updateTotalPrice } from "../utils/BookableSessionUtils.js";
 
 function BookableSession({session})
 {
-    
     // update booking price, dependent on number of adults and children going
     const updateBookingPrice = (adults, children) =>
     {
@@ -48,18 +48,18 @@ function BookableSession({session})
         if (session.slotsRemaining < attendees)
         {
             $(e.target).siblings(".too-many-attendees-message").text("Sorry, there aren't enough available slots.\nThe total number of adults and children must be " + session.slotsRemaining + " or less.");
-            $("#" + session.session_id).addClass("invalid-input");
+            $("#" + session.sessionId).addClass("invalid-input");
         }
         else
         {
             $(e.target).siblings(".too-many-attendees-message").text("");
-            $("#" + session.session_id).removeClass("invalid-input");
+            $("#" + session.sessionId).removeClass("invalid-input");
             $(".invalid-booking-message").text("");
         }
         updateBookingPrice(adults, children);
     }
     return (
-        <div id={session.session_id} className="booking-time-slot-outer">
+        <div id={session.sessionId} className="booking-time-slot-outer">
             <div className="text-light booking-time-slot-item">
                 <h6 className="time-slot">{session.time.slice(0, 5)}</h6>
                 <p>Remaining Available Slots: <span className="slots-available">{session.slotsRemaining}</span></p>

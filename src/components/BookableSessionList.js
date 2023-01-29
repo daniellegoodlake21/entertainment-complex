@@ -18,7 +18,7 @@ function BookableSessionList({bookableSessions, setBookableSessions})
     }
     let componentContents = <div id="booking-time-slots-list">
     {
-        bookableSessions.map(bookableSession => <BookableSession key={bookableSession.session_id} session={bookableSession}/>)
+        bookableSessions.map(bookableSession => <BookableSession key={bookableSession.sessionId} session={bookableSession}/>)
     }
     </div>;
     return (componentContents);

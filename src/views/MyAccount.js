@@ -61,10 +61,10 @@ export default function MyAccount()
         }
         // map the data to Booking components
         let i = 0;
-        bookings = bookings.map((booking) => 
+        bookings = bookings.map(booking => 
         {
           i++;
-          return (<Booking key={i} index={i} booking={booking} setBookingData={setBookingData}/>);
+          return (<Booking key={i} index={i} booking={booking} setBookingData={setBookingData} token={token}/>);
         });
         setBookingData(bookings);
       }
