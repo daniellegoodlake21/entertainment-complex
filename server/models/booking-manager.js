@@ -135,7 +135,6 @@ class BookingManager
             let booking = bookings[i];
             if (await this.bookingNotInBasket(booking))
             {
-                console.log("Booking not in basket");
                 let sql = "INSERT INTO bookings (user_id, number_of_adults, number_of_children, activity, confirmed, session_id) VALUES (" + this.userId +" ," + booking.adults + ", " + booking.children + ", '" + booking.activity + "', 0, " + booking.sessionId + ");";
                 try
                 {

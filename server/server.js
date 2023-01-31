@@ -248,7 +248,6 @@ app.post("/bookable-sessions", async (req, res) =>
         let bookingManager = new BookingManager(userId);
         let results = await bookingManager.confirmBookings();
         let result = results.result;
-        console.log(result);
         if (result === "success")
         {
             res.status(200).send({result});
