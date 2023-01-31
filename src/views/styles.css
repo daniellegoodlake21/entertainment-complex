@@ -91,7 +91,7 @@ body {
     width: 50%;
     margin: auto;
   }
-  .customize-booking-basics, .customize-booking-extras, .add-booking-to-basket-form
+  .customize-booking-basics, .customize-booking-extras, .add-booking-to-basket-form, .seat-view
   {
     padding: 1rem;
     margin: 1rem;
@@ -102,7 +102,60 @@ body {
     width: 26rem;
     height: 34rem;
   }
-  .add-booking-to-basket-form.small, .customize-bowling
+   /* Seat Selector Subsection */
+   .cinema-screen
+   {
+    width: 20rem;
+    margin-left: 15%;
+    background-color: darkgray;
+    border: 2px solid black;
+   }
+   .cinema-screen h5
+   {
+    padding: 0.1rem;
+    margin: auto;
+   }
+  .seat-view
+  {
+    width: 30rem !important;
+  }
+  .seat-selector
+  {
+    margin-top: 5%;
+    margin-left: 15%;
+  }
+  .seat-row
+  {
+    margin: 1rem;
+    display: inline-block;
+  }
+  .seat
+  {
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: 0.25rem;
+    background-color: darkred;
+    border: 2px solid black;
+    display: inline-block;
+  }
+  .seat-id
+  {
+    margin: 0;
+    padding: 0;
+    font-size: small;
+    font-weight: bold;
+    color: white;
+  }
+  .seat.premium
+  {
+    background-image: linear-gradient(royalblue, darkblue);
+  }
+  .seat.selected
+  {
+    background-color: gold;
+  }
+  /* End of Seat Selector Subsection */
+  .add-booking-to-basket-form.small, .customize-bowling, .customize-booking-extras.small
   {
     padding: 1rem;
     margin: 1em;

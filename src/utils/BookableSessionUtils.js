@@ -8,7 +8,7 @@ export async function getBookableSessions(activity, selectedDate)
 { 
     if (selectedDate === "")
     {
-        return {"result" : "success", "sessions" : []};
+        return {status: true, sessions : []};
     }
     return fetch("http://localhost:3001/bookable-sessions?activity=" + activity +"&selectedDate=" + selectedDate,
     {
@@ -17,7 +17,7 @@ export async function getBookableSessions(activity, selectedDate)
         {
         "Content-Type": "application/json"
         },
-    }).catch((err) => console.log(err)).then(data => data.json());
+    }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 
 
@@ -31,7 +31,7 @@ export async function getSnacks(activity)
         {
         "Content-Type": "application/json"
         },
-    }).catch((err) => console.log(err)).then(data => data.json());
+    }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 // update total price
 export function updateTotalPrice(e=null)
@@ -132,8 +132,9 @@ export async function retrieveSnacks(e, activity, beforeOrAfter, setSnacks)
     let activityName = activityNamesMap[activity];
     e.preventDefault();
     let snacksData = await(getSnacks(activity));
-    if (snacksData.result === "success")
+    if (snacksData.status)
     {
+        snacksData = await snacksData.body;
         if (snacksData.snacks.length > 0)
         {
             $(".snacks-message").text("Add in some pre-ordered snacks for " + beforeOrAfter +  " your " + activityName + "! (Optional)");
@@ -146,7 +147,8 @@ export async function retrieveSnacks(e, activity, beforeOrAfter, setSnacks)
             $(e.target).text("Refresh");
         }
     }
-    else if (snacksData.result === "error")
+
+    else
     {
         $(".snacks-message").text("There was a problem retrieving the snacks available to pre-order for " + beforeOrAfter + " your " + activityName + ".");
         $(e.target).text("Refresh");
@@ -156,9 +158,12 @@ export async function retrieveSnacks(e, activity, beforeOrAfter, setSnacks)
 // clear bookable sessions upon clearing date
 export async function resetBookableSessions(activity, setBSessions)
 {
-    let bookableSessionsData = await getBookableSessions(activity, "");
-    setBSessions(bookableSessionsData.sessions);
-    $(".time-slots-message").text("Please select a date first.");
+    let res = await getBookableSessions(activity, "");
+    if (res.status)
+    {
+        setBSessions([]);
+        $(".time-slots-message").text("Please select a date first.");
+    }
 }
 
 // retrieve the ice skating sessions available to reserve
@@ -172,65 +177,69 @@ export async function retrieveBookableSessions(e, activity, setBSessions)
     }
     else 
     {
-        let bookableSessionsData = await getBookableSessions(activity, e.target.value);
-        if (bookableSessionsData.result === "success")
+        let res = await getBookableSessions(activity, e.target.value);
+        if (res.status)
         {
+            let body = await res.body;
+            if (body.result === "success")
+            {
+            let bookableSessionsData = body.sessions;
             // do not display bookable sessions that have already been added to this user's basket
             // first get the basket's session ids...
             let basketSessionIds = [];
             let basket = localStorage.getItem("basket");
             if (basket)
             {
-                basket = JSON.parse(basket);
-                if (basket)
-                {
-                    
-                    let basketItems = basket.items; 
-                    for (let i = 0; i < basketItems.length; i++)
+                if (body.result === "success")
+                    basket = JSON.parse(basket);
+                    if (basket)
                     {
-                        basketSessionIds.push(Number(basketItems[i].sessionId));
-                    }
-                    // ...then check for matches (bookable sessions already added to user's basket)
-                    let sessionsToRemoveIndexes = [];
-                    for (let i = 0; i < bookableSessionsData.sessions.length; i++)
-                    {
-                        let sessionId = bookableSessionsData.sessions[i].sessionId;
-                        if (basketSessionIds.includes(Number(sessionId)))
+                        
+                        let basketItems = basket.items; 
+                        for (let i = 0; i < basketItems.length; i++)
                         {
-                            sessionsToRemoveIndexes.push(i);
+                            basketSessionIds.push(Number(basketItems[i].sessionId));
                         }
-                    }  
-                    // remove matches
-                    for (let i = 0; i < bookableSessionsData.sessions.length; i++)
-                    {
-                        if (sessionsToRemoveIndexes.includes(i))
+                        // ...then check for matches (bookable sessions already added to user's basket)
+                        let sessionsToRemoveIndexes = [];
+                        for (let i = 0; i < bookableSessionsData.length; i++)
                         {
-                            bookableSessionsData.sessions.splice(i, 1);
+                            let sessionId = bookableSessionsData[i].sessionId;
+                            if (basketSessionIds.includes(Number(sessionId)))
+                            {
+                                sessionsToRemoveIndexes.push(i);
+                            }
+                        }  
+                        // remove matches
+                        for (let i = 0; i < bookableSessionsData.length; i++)
+                        {
+                            if (sessionsToRemoveIndexes.includes(i))
+                            {
+                                bookableSessionsData.splice(i, 1);
+                            }
                         }
-                    }
+                    }     
+                    // now display the results and corresponding time slots message
                 }
-                
+                if (bookableSessionsData.length > 0)
+                {
+                    $(".time-slots-message").text("Select a Time Slot:");
+                    setBSessions(bookableSessionsData);
+                }
+                else
+                {
+                    $(".time-slots-message").text("Sorry, there are no sessions available to book on this date that you haven't already placed in your basket.");
+                    setBSessions([]);
+                }
             }
-            // now display the results and corresponding time slots message
-            if (bookableSessionsData.sessions.length > 0)
+            else if (body.result === "dateRequired")
             {
-                $(".time-slots-message").text("Select a Time Slot:");
-                setBSessions(bookableSessionsData.sessions);
+                $(".time-slots-message").text("Please select a date first.");
             }
-            else
-            {
-                $(".time-slots-message").text("Sorry, there are no sessions available to book on this date that you haven't already placed in your basket.");
-                setBSessions([]);
-            }
-
         }
-        else if (bookableSessionsData.result === "dateRequired")
+        else
         {
-            $(".time-slots-message").text("Please select a date first.");
-        }
-        else if (bookableSessionsData.result === "error")
-        {
-            $(".time-slots-message").text("There was a problem retrieving ice skating sessions.");
+            $(".time-slots-message").text("There was a problem retrieving sessions.");
         }
     }
 }

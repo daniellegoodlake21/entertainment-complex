@@ -21,7 +21,7 @@ export async function saveBooking(bookings, isConfirmed)
         "Content-Type": "application/json"
         },
         body: JSON.stringify({bookings, isConfirmed, token, userId})
-    }).catch((err) => console.log(err)).then(data => data.json());      
+    }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));      
 }
 
 // get the data which is the same for all users for each session (e.g., the date, time, cost per adult and cost per child etc)
@@ -34,7 +34,7 @@ const loadBookingSessionDataAssociatedWithBooking = async (sessionId) =>
       {
       "Content-Type": "application/json"
       },
-  }).catch((err) => console.log(err)).then(data => data.json());
+  }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 // get the snack price and snack name from the id only
 const getSnackDetailsFromId = async (snackId) =>
@@ -46,7 +46,7 @@ const getSnackDetailsFromId = async (snackId) =>
       {
       "Content-Type": "application/json"
       },
-  }).catch((err) => console.log(err)).then(data => data.json());
+  }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 /* if the local storage's basket does not exist, the user may have previously saved basket data from when
 they were last logged in, so retrieve that */
@@ -60,7 +60,7 @@ const retrieveBookingsFromDatabase = async (token, userId) =>
       "Content-Type": "application/json"
       },
       body: JSON.stringify({token, userId})
-  }).catch((err) => console.log(err)).then(data =>data.json());
+  }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 } 
 
 // get the snack price, quantity and name from the booking id
@@ -74,7 +74,7 @@ export async function getLinkedSnacksDetails(bookingId, token, userId)
       "Content-Type": "application/json"
       },
       body: JSON.stringify({bookingId, token, userId})
-  }).catch((err) => console.log(err)).then(data => data.json());
+  }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 
 
@@ -96,14 +96,16 @@ export async function loadFromLocalStorage(token)
         {
             let basketItem = basketItems[i];
             let res = await loadBookingSessionDataAssociatedWithBooking(basketItem.sessionId);
-            if (res.result === "success")
+            if (res.status)
             {
+                let body = await res.body;
+                let session = body.session;
                 $(".basket-error-message").text("");
-                let sessionId = res.session.sessionId;
-                let time = res.session.time;
-                let childPrice = res.session.childPrice;
-                let adultPrice = res.session.adultPrice;
-                let date = res.session.date;
+                let sessionId = session.sessionId;
+                let time = session.time;
+                let childPrice = session.childPrice;
+                let adultPrice = session.adultPrice;
+                let date = session.date;
                 let adults = basketItem.adults;
                 let children = basketItem.children;
                 let activity = basketItem.activity;
@@ -118,14 +120,15 @@ export async function loadFromLocalStorage(token)
                 {
                     let snackId = basketItem.snackData[j].snackId;
                     let result = await getSnackDetailsFromId(snackId);
-                    if (result.result === "success")
+                    if (result.status)
                     {
-                        let snack = result.snack;
+                        let body = await result.body;
+                        let snack = body.snack;
                         snack.snackQuantity = basketItem.snackData[j].snackQuantity;
                         totalPrice += snack.snackPrice * snack.snackQuantity;
                         snackData.push(snack);
                     }
-                    else if (result.result === "error")
+                    else
                     {
                         $(".basket-error-message").text("There was a problem accessing booking extras.");
                     }   
@@ -135,7 +138,7 @@ export async function loadFromLocalStorage(token)
             }
         }
     }    
-    catch
+    catch (err)
     {
         $(".purchase-btn").attr("disabled", "disabled");
         if (!token)
@@ -145,15 +148,16 @@ export async function loadFromLocalStorage(token)
     }
     return bookings;
 }
- /* load the bookings from the database */
- export async function loadFromDatabase(token)
+/* load the bookings from the database */
+export async function loadFromDatabase(token)
 {
     let bookings = [];
     let userId = localStorage.getItem("userId");
     let res = await retrieveBookingsFromDatabase(token, userId);
-    if (res.result === "success")
+    if (res.status)
     {
-        bookings = res.bookings;
+        let body = await res.body;
+        bookings = body.bookings;
         if (bookings.length === 0)
         {
             $(".purchase-btn").attr("disabled", "disabled");
@@ -169,30 +173,33 @@ export async function loadFromLocalStorage(token)
             let bookingId = bookings[i].bookingId;
             bookings[i].totalPrice = (bookings[i].childPrice * bookings[i].children) + (bookings[i].adultPrice * bookings[i].adults);
             let userId = localStorage.getItem("userId");
-            let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
+            // multiply total price if necessary depending on the booking type
             if (bookings[i].activity === "bowling")
             {
                 bookings[i].totalPrice = bookings[i].totalPrice * bookings[i].additionalDetails.games;
             }
-            if (snackData.result === "success")
+            // get snack data and add to total price
+            let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
+            if (snackData.status)
             {
+                snackData = await snackData.body;
                 bookings[i].snackData = snackData.snackData;
                 for (let j = 0; j < bookings[i].snackData.length; j++)
                 {
-                let snackPrice = bookings[i].snackData[j].snackPrice;
-                let snackQuantity = bookings[i].snackData[j].snackQuantity;
-                bookings[i].totalPrice += snackPrice * snackQuantity;
+                    let snackPrice = bookings[i].snackData[j].snackPrice;
+                    let snackQuantity = bookings[i].snackData[j].snackQuantity;
+                    bookings[i].totalPrice += snackPrice * snackQuantity;
                 }
             }
-            else if (snackData.result === "error")
+            else
             {
                 $(".basket-error-message").text("There was a problem accessing snacks within bookings in you basket.");
             }
         }
     }
-    else if (res.result === "error")
+    else
     {
-    $(".basket-error-message").text("There was a problem accessing your basket.");
+        $(".basket-error-message").text("There was a problem accessing your basket.");
     }
     return bookings;
 }

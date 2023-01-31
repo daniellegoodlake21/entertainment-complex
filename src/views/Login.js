@@ -14,7 +14,7 @@ async function loginUser(user)
         'Content-Type': 'application/json'
         },
         body: JSON.stringify(user)
-    }).catch((err) => console.log(err)).then(data => data.json());
+    }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 export default function Login({setToken})
 {
@@ -28,28 +28,33 @@ export default function Login({setToken})
         let confirmedPassword = $("#password")[0].value;
         e.preventDefault();
         const res = await loginUser({confirmedEmail, confirmedPassword});
-        let result = res.result;
-        if (result === "success")
+        if (res.status)
         {
-            setToken(res.token);
-            localStorage.setItem("userId", res.userId);
-            $(".invalid-message").attr("hidden", "true");
-            navigate('/my-account');
+            let body = await res.body;
+            let result = body.result;
+            if (result === "success")
+            {
+                setToken(body.token);
+                localStorage.setItem("userId", body.userId);
+                $(".invalid-message").attr("hidden", "true");
+                navigate('/my-account');
+            }
+            else
+            {
+                if (result === "incorrect")
+                {
+                    $(".invalid-message").text("Incorrect password.");
+                }
+                else if (result === "doesNotExist")
+                {
+                    $(".invalid-message").text("Sorry, a user with this email does not exist. Please check your input and try again.");
+                }
+                $(".invalid-message").removeAttr("hidden");   
+            }
         }
         else
         {
-            if (result === "incorrect")
-            {
-                $(".invalid-message").text("Incorrect password.");
-            }
-            else if (result === "doesNotExist")
-            {
-                $(".invalid-message").text("Sorry, a user with this email does not exist. Please check your input and try again.");
-            }
-            else if (result === "error")
-            {
-                $(".invalid-message").text("There was a problem when logging in to your account.");
-            }  
+            $(".invalid-message").text("There was a problem when logging in to your account.");
             $(".invalid-message").removeAttr("hidden");   
         }
 

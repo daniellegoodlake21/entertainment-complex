@@ -12,7 +12,7 @@ const cancelBooking = async (bookingId, token, userId) =>
         "Content-Type": "application/json"
         },
         body: JSON.stringify({bookingId, token, userId})
-    }).catch((err) => console.log(err)).then(data => data.json());
+    }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 function Booking({index, booking, setBookingData, setTotalPrice})
 {
@@ -53,7 +53,7 @@ function Booking({index, booking, setBookingData, setTotalPrice})
             return; // in this case it hasn't been loaded from the database as retrieval from the database results in defining a booking id
         }
         let res = await cancelBooking(bookingId, token, userId);
-        if (res.result === "success")
+        if (res.status)
         {
             let bookings = await loadFromDatabase(token);
             loadBookings(bookings, setBookingData, setTotalPrice);
@@ -64,7 +64,7 @@ function Booking({index, booking, setBookingData, setTotalPrice})
                 setTotalPrice((oldTotalPrice - booking.totalPrice).toFixed(2));    
             }
         }
-        else if (res.result === "error")
+        else
         {
             $(".booking-cancellation-status-message").text("There was a problem cancelling your booking.");
         }

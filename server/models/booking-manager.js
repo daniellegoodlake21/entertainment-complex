@@ -133,9 +133,6 @@ class BookingManager
         for (let i = 0; i < bookings.length; i++)
         {
             let booking = bookings[i];
-            console.log("Booking");
-            console.log(booking)
-            console.log("End of Booking");
             if (await this.bookingNotInBasket(booking))
             {
                 console.log("Booking not in basket");

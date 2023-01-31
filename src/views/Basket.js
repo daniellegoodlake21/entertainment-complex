@@ -16,31 +16,36 @@ export default function Basket({token})
     const saveBookingData = async (isConfirmed, bookings) =>
     {
       let res = await saveBooking(bookings, isConfirmed);
-      if (res.result === "success")
+      if (res.status)
       {
-        return true;
-      }
-      else if (isConfirmed)
-      {
-        if (res.result === "loginRequired")
+        let body = await res.body;
+        if (body.result === "success")
         {
-          $(".login-required-purchase-message").text("You must log in or register to complete your purchase.");
+          return true;
+        }  
+        else if (body.result === "loginRequired")
+        {
+          if (isConfirmed)
+          {
+            // the user has tried to confirm the booking and has manually altered the isConfirmed parameter without being logged in
+            $(".login-required-purchase-message").text("You must log in or register to complete your purchase.");
+          }
+          else
+          {
+            $(".login-required-purchase-message").text("You must log in or register to save your basket.");
+          }
         }
-        else if (res.result === "error")
-        {
-          $(".login-required-purchase-message").text("There was a problem confirming your booking.");
-        }   
       }
       else
       {
-        if (res.result === "loginRequired")
+        if (isConfirmed)
         {
-          $(".login-required-purchase-message").text("You must log in or register to save your basket.");
-        }
-        else if (res.result === "error")
+          $(".login-required-purchase-message").text("There was a problem confirming your booking.");
+        }  
+        else
         {
           $(".login-required-purchase-message").text("There was a problem saving your basket.");
-        }  
+        } 
       }
       return false;
     }

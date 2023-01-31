@@ -14,7 +14,7 @@ const retrieveConfirmedBookings = async (token, userId) =>
       "Content-Type": "application/json"
       },
       body: JSON.stringify({token, userId})
-  }).catch((err) => console.log(err)).then(data =>data.json());
+  }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 } 
 
 export default function MyAccount()
@@ -28,13 +28,14 @@ export default function MyAccount()
     let token = localStorage.getItem("token");
     let userId = localStorage.getItem("userId");
     let res = await retrieveConfirmedBookings(token, userId);
-    if (res.result === "success")
+    if (res.status)
     {
+      let body = await res.body;
       $(".confirmed-bookings-message").text("");
-      if (res.bookings.length > 0)
+      if (body.bookings.length > 0)
       {
         // retrieve the associated snack data and price for each booking
-        bookings = res.bookings;
+        bookings = body.bookings;
         for (let i = 0; i < bookings.length; i++)
         {
           let booking = bookings[i];
@@ -42,16 +43,17 @@ export default function MyAccount()
           // snack data
           let bookingId = booking.bookingId;
           let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
-          if (snackData.result === "success")
+          if (snackData.status)
           {
-            bookings[i].snackData = snackData.snackData;
-            for (let j = 0; j < booking.snackData.length; j++)
-            {
-              let snackPrice = booking.snackData[j].snackPrice;
-              let snackQuantity = booking.snackData[j].snackQuantity;
-              totalPrice += snackPrice * snackQuantity;
-            }
-            bookings[i].totalPrice = totalPrice;
+              snackData = await snackData.body;
+              bookings[i].snackData = snackData.snackData;
+              for (let j = 0; j < booking.snackData.length; j++)
+              {
+                let snackPrice = booking.snackData[j].snackPrice;
+                let snackQuantity = booking.snackData[j].snackQuantity;
+                totalPrice += snackPrice * snackQuantity;
+              }
+              bookings[i].totalPrice = totalPrice;
           }
           else
           {
@@ -73,7 +75,6 @@ export default function MyAccount()
         $(".confirmed-bookings-message").text("You currently have no confirmed bookings.");
         setBookingData([]);
       }
-
     }
     else
     {

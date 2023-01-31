@@ -14,7 +14,7 @@ async function registerUser(user)
         'Content-Type': 'application/json'
         },
         body: JSON.stringify(user)
-    }).catch((err) => console.log(err)).then(data => data.json())
+    }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}))
 }
 
 export default function Register({setToken})
@@ -124,25 +124,30 @@ export default function Register({setToken})
           let confirmedEmail = $("#email")[0].value;
           let confirmedPassword = $("#password")[0].value;
           const res = await registerUser({confirmedEmail, confirmedPassword});
-          if (res.result === "success")
+          if (res.status)
           {
-            
-              setToken(res.token);
-              localStorage.setItem("userId", res.userId);
-              $(".invalid-message").attr("hidden", "true");
-              navigate("/my-account");
+            let body = await res.body;
+            if (body.result === "success")
+            {
+              
+                setToken(body.token);
+                localStorage.setItem("userId", body.userId);
+                $(".invalid-message").attr("hidden", "true");
+                navigate("/my-account");
+            }
+            else if (body.result === "alreadyExists")
+            {
+                $(".invalid-message").text("A user with this email address already exists.");
+                $(".invalid-message").removeAttr("hidden");
+            }
           }
-          else if (res.result === "error")
+          else
           {
               $(".invalid-message").text("There was a problem trying to register you an account.");
               $(".invalid-message").removeAttr("hidden");
           }
-          else if (res.result === "alreadyExists")
-          {
-              $(".invalid-message").text("A user with this email address already exists.");
-              $(".invalid-message").removeAttr("hidden");
-          }
         }
+      
   }
   return (
   <div>
