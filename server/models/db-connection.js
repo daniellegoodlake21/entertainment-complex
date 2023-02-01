@@ -1,6 +1,6 @@
 import { createConnection } from 'mysql';
 import {config} from 'dotenv';
-config();
+config("./server/.env");
 class DatabaseConnection
 {
     constructor()
