@@ -6,6 +6,7 @@ import {config} from 'dotenv';
 import jwt from 'jsonwebtoken';
 import BookingSnackManager from "./models/booking-snack-manager.js";
 import BookingManager from "./models/booking-manager.js";
+import SeatingManager from "./models/seating-manager.js";
 config();
 
 const app = express();
@@ -106,7 +107,7 @@ app.get("/bookable-sessions", async (req, res) =>
     if (result === "success")
     {
         let sessions = results.sessions;
-        res.status(200).send({result,sessions});        
+        res.status(200).send({result, sessions});        
     }
     else
     {
@@ -313,6 +314,23 @@ app.post("/cancel-booking", async (req, res) =>
         {
             res.status(401).send({});
         }
+    }
+});
+
+// retrieve seat data for the cinema
+app.get("/get-cinema-seat-data", async (req, res) =>
+{
+    let seatingManager = new SeatingManager("cinema");
+    let results = await seatingManager.getSeats();
+    let result = results.result;
+    if (result === "success")
+    {
+        let seats = results.seats;
+        res.status(200).send({seats});
+    }
+    else
+    {
+        res.status(500).send({});
     }
 });
 

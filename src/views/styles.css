@@ -150,9 +150,18 @@ body {
   {
     background-image: linear-gradient(royalblue, darkblue);
   }
+  .seat.unavailable
+  {
+    background-color: gray;
+  }
   .seat.selected
   {
-    background-color: gold;
+    background-image: url("../../public/images/standard-seat.png");
+  }
+  .seat.selected.premium
+  {
+    background-image: url("../../public/images/premium-seat.png");
+    border: 4px solid darkblue;
   }
   /* End of Seat Selector Subsection */
   .add-booking-to-basket-form.small, .customize-bowling, .customize-booking-extras.small
@@ -201,12 +210,20 @@ body {
     border: 2px solid black;
     color: white;
   }
-  .booking-time-slot-outer
+  .booking-time-slot-outer, .show-details
   {
     padding: 0.25rem;
-    background-color: paleturquoise;
     border: 2px solid black;
     margin: 1rem;
+  }
+  .booking-time-slot-outer
+  {
+    background-color: paleturquoise;
+  }
+  .show-details
+  {
+    margin-bottom: 0;
+    background-image: linear-gradient( rgb(238, 214, 152),  rgb(205, 182, 124));
   }
   .attendees-outer
   {

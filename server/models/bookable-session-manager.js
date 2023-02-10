@@ -35,31 +35,70 @@ class BookableSessionManager
     /* get all bookable sessions of the specified activity type and date */
     async getBookableSessions()
     {
-        let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price FROM bookable_sessions WHERE activity = '" + this.activity + "' AND date = DATE('" + this.date + "') AND slots_remaining > 0 ORDER BY time ASC;";
-        try
+        if (this.activity === "cinema" || this.activity === "theatre")
         {
-            let results = await dbConnection.runQuery(sql);
-            
-            let sessions = [];
-            for (let i = 0; i < results.length; i++)
+            let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price, activity, show_details_id, title, show_id, title, description, age_rating FROM bookable_sessions, show_details WHERE bookable_sessions.show_details_id = show_details.show_id AND activity = '" + this.activity + "' AND date = DATE('" + this.date + "') AND slots_remaining > 0 ORDER BY time ASC;";       
+            try
             {
-                let session = 
+                let results = await dbConnection.runQuery(sql);  
+                let sessions = [];
+                for (let i = 0; i < results.length; i++)
                 {
-                    sessionId: results[i].session_id,
-                    time : results[i].time,
-                    slotsRemaining : results[i].slots_remaining,
-                    childPrice : results[i].child_price,
-                    adultPrice : results[i].adult_price
-                };
-  
-                sessions.push(session);
+                    let showDetails = 
+                    {
+                        showId: results[i].showId,
+                        title: results[i].title,
+                        description: results[i].description,
+                        ageRating: results[i].age_rating
+                    };
+                    let session = 
+                    {
+                        sessionId: results[i].session_id,
+                        time : results[i].time,
+                        slotsRemaining : results[i].slots_remaining,
+                        childPrice : results[i].child_price,
+                        adultPrice : results[i].adult_price,
+                        activity: results[i].activity,
+                        show: showDetails
+                    };
+    
+                    sessions.push(session);
+                }
+                return {result : "success", sessions};
             }
-            return {result : "success", sessions};
+            catch (err)
+            {
+                console.log(err);
+                return {result: "error"};
+            }   
         }
-        catch (err)
+        else
         {
-            console.log(err);
-            return {result: "error"};
+            let sql = "SELECT session_id, time, slots_remaining, child_price, adult_price, activity FROM bookable_sessions WHERE activity = '" + this.activity + "' AND date = DATE('" + this.date + "') AND slots_remaining > 0 ORDER BY time ASC;";
+            try
+            {
+                let results = await dbConnection.runQuery(sql);
+                let sessions = [];
+                for (let i = 0; i < results.length; i++)
+                {
+                    let session = 
+                    {
+                        sessionId: results[i].session_id,
+                        time : results[i].time,
+                        slotsRemaining : results[i].slots_remaining,
+                        childPrice : results[i].child_price,
+                        adultPrice : results[i].adult_price,
+                        activity: results[i].activity                        
+                    };
+                    sessions.push(session);
+                }
+                return {result : "success", sessions};
+            }
+            catch (err)
+            {
+                console.log(err);
+                return {result: "error"};
+            }         
         }
     }
 

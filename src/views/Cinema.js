@@ -4,9 +4,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import BookableSessionList from "../components/BookableSessionList.js";
 import SnacksList from "../components/SnacksList.js";
-import {addToBasket,  retrieveSnacks, retrieveBookableSessions, updateTotalPrice} from "../utils/BookableSessionUtils.js";
+import {addToBasket,  retrieveSnacks, retrieveBookableSessions, setSelectableSeats} from "../utils/BookableSessionUtils.js";
 import useBasket from "../hooks/useBasket.js";
-import $ from "jquery";
+
 function Cinema()
 {
     const {basket, setBasket} = useBasket();
@@ -14,17 +14,13 @@ function Cinema()
     
     const activity = "cinema";
 
-    let [snacks, setSnacks] = useState();
-    let [bSessions, setBSessions] = useState();
+    const [snacks, setSnacks] = useState();
+    const [bSessions, setBSessions] = useState();
 
     useEffect(() =>
     {
-      $(".seat").on("click", (event )=>
-      {
-        $(event.target).toggleClass("selected");
-      });
+      setSelectableSeats("cinema");
     }, []);
-
 
     return (<div> 
     <form className="customize-booking-package-form" onSubmit={(e) => addToBasket(e, "cinema", {setBasket}, {navigate})}>
