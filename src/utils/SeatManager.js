@@ -93,7 +93,9 @@ class SeatManager
     // retrieve seat data from the database
      async retrieveAllSeatsData()
     {
-        return fetch("http://localhost:3001/get-cinema-seat-data", 
+        let sessionIdParameter = ""; // the default, if no session (film or show) has been selected
+        
+        return fetch("http://localhost:3001/get-cinema-seat-data" + sessionIdParameter, 
         {
             method: "GET",
             headers:

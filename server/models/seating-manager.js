@@ -8,7 +8,33 @@ class SeatingManager
         this.activity = activity;
     }
 
-    async getSeats()
+    async getBookedSeats(bookableSessionId)
+    {
+        let sql = "SELECT " + this.activity + "_seat_id FROM bookings_" + this.activity + "_seats_links WHERE booking_id = " +  bookableSessionId + ";";
+        try
+        {
+            let results = await dbConnection.runQuery(sql);
+            let bookedSeats = [];
+            for (let i = 0; i < results.length; i++)
+            {
+                if (this.activity === "cinema")
+                {
+                    bookedSeats.push(results[i].cinema_seat_id);
+                }
+                else
+                {
+                    bookedSeats.push(results[i].theatre_seat_id);
+                }
+            }
+            return bookedSeats;
+        }
+        catch (err)
+        {
+            console.log(err);
+            return [];
+        }
+    }
+    async getSeats(bookableSessionId = null)
     {
         let sql = "SELECT * FROM " + this.activity + "_seats;";
         try
@@ -17,12 +43,18 @@ class SeatingManager
             let seats = [];
             for (let i = 0; i < results.length; i++)
             {
+                let available = true;
+                if (bookableSessionId)
+                {
+                    let bookedSeats = await this.getBookedSeats(bookableSessionId);
+                    available = !bookedSeats.includes(results[i].seatId);
+                }
                 if (this.activity === "cinema")
                 {
                     let seat = {
                         seatId: results[i].seat_id,
                         premium: results[i].premium,
-                        available: results[i].available
+                        available: available
                     }
                     seats.push(seat);
                 }
