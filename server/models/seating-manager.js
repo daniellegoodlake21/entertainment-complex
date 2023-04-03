@@ -41,14 +41,14 @@ class SeatingManager
         {
             let results = await dbConnection.runQuery(sql);
             let seats = [];
+            let bookedSeats = [];
+            if (bookableSessionId)
+            {
+                bookedSeats = await this.getBookedSeats(bookableSessionId);
+            }
             for (let i = 0; i < results.length; i++)
             {
-                let available = true;
-                if (bookableSessionId)
-                {
-                    let bookedSeats = await this.getBookedSeats(bookableSessionId);
-                    available = !bookedSeats.includes(results[i].seatId);
-                }
+                let available = !bookedSeats.includes(results[i].seat_id);
                 if (this.activity === "cinema")
                 {
                     let seat = {

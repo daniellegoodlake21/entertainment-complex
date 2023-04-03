@@ -94,7 +94,12 @@ class SeatManager
      async retrieveAllSeatsData()
     {
         let sessionIdParameter = ""; // the default, if no session (film or show) has been selected
-        // CONTINUE HERE!
+        let selectedSession = $(".booking-time-slot-outer.selected");
+        if (selectedSession.length === 1)
+        {
+            let sessionId = selectedSession.first().attr("id");
+            sessionIdParameter = "?sessionId=" + sessionId;
+        }
         return fetch("http://localhost:3001/get-cinema-seat-data" + sessionIdParameter, 
         {
             method: "GET",
@@ -114,6 +119,10 @@ class SeatManager
             if (!seats[i].available)
             {
                 $("#" + seats[i].seatId).addClass("unavailable");
+            }
+            else
+            {
+                $("#" + seats[i].seatId).removeClass("unavailable");              
             }
             if (activity === "cinema")
             {

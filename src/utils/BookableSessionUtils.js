@@ -260,7 +260,7 @@ export async function retrieveBookableSessions(e, activity, setBSessions)
     }
 } 
 
-// called on page load once
+// load and style seats
 export async function setSelectableSeats(activity)
 {
     let seatIds = [];

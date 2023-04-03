@@ -150,8 +150,9 @@ body {
   {
     background-image: linear-gradient(royalblue, darkblue);
   }
-  .seat.unavailable
+  .seat.unavailable, .seat.premium.unavailable
   {
+    background-image: none;
     background-color: gray;
   }
   .seat.selected
