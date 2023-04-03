@@ -76,7 +76,7 @@ export async function addToBasket(e, activity, {setBasket}, {navigate})
 {
     e.preventDefault();
     let selectedSession = $(".booking-time-slot-outer.selected");
-    if (selectedSession.length == 0)
+    if (selectedSession.length === 0)
     {
         // set invalid booking message - no time slot selected
         $(".invalid-booking-message").text("Invalid input. Please select a time slot.");

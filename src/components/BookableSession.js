@@ -12,7 +12,7 @@ function BookableSession({session})
         let sessionPrice = (adults * session.adultPrice);
         if (typeof(children) === Number)
         {
-            let sessionPrice = (adults * session.adultPrice) + (children * session.childPrice);
+            sessionPrice += (children * session.childPrice);
         }
         if ($("#price-multiplier").length === 1)
         {
@@ -24,13 +24,17 @@ function BookableSession({session})
     }
 
 
-    const setupSeats = () =>
+    const setupSeats = (setSelectableSeating=false) =>
     {
         // if it is an activity with a seating plan (cinema or theatre) then set the selectable seats
         if (session.activity === "cinema" || session.activity === "theatre")
         {
             let numberOfSelectableSeats = Number($(".number-of-adults").first().find("option:selected").first().val());
             seatManager.setNumberOfSelectableSeats(numberOfSelectableSeats);
+            if (setSelectableSeating)
+            {
+                setSelectableSeats(session.activity, numberOfSelectableSeats);
+            }
         }
     }
 
@@ -53,8 +57,7 @@ function BookableSession({session})
         let children = $(".number-of-children").first().find("option:selected").first().val();
         updateBookingPrice(adults, children);
         $(".invalid-booking-message").text("");
-        setupSeats(); // checks if applicable activity, and if so, sets seat data
-        setSelectableSeats(session.activity);
+        setupSeats(true); // checks if applicable activity, and if so, sets seat data
 
     };
 
@@ -79,7 +82,7 @@ function BookableSession({session})
         setupSeats(); // checks if applicable activity, and if so, sets seat data
     }
 
-    // display price per person (with separate child price only for appliccable activities)
+    // display price per person (with separate child price only for applicable activities)
     const getPricePerPerson = () =>
     {
         if (session.activity === "bowling" || session.activity === "iceSkating")

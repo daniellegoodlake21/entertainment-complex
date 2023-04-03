@@ -49,7 +49,7 @@ class SeatManager
         const cinemaPremiumSeatMultiplier = 1.5;
         if (this.seats == undefined)
         {
-            $(".invalid-booking-message").text("Seat details have not been successfully retrieved.");
+            $(".invalid-booking-message").text("Please select a film to see first.");
             this.totalPrice = (0).toFixed(2);
         }
         else
