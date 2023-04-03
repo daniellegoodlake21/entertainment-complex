@@ -6,6 +6,7 @@ import BookableSessionList from "../components/BookableSessionList.js";
 import SnacksList from "../components/SnacksList.js";
 import {addToBasket,  retrieveSnacks, retrieveBookableSessions, setSelectableSeats} from "../utils/BookableSessionUtils.js";
 import useBasket from "../hooks/useBasket.js";
+import seatManager from "../utils/SeatManager.js";
 
 function Cinema()
 {
@@ -19,6 +20,7 @@ function Cinema()
 
     useEffect(() =>
     {
+      seatManager.setNumberOfSelectableSeats(0); // prevents the user from selecting seats before having selected a session
       setSelectableSeats("cinema");
     }, []);
 

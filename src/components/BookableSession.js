@@ -54,6 +54,7 @@ function BookableSession({session})
         updateBookingPrice(adults, children);
         $(".invalid-booking-message").text("");
         setupSeats(); // checks if applicable activity, and if so, sets seat data
+        setSelectableSeats(session.activity);
 
     };
 

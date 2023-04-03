@@ -272,7 +272,6 @@ export async function setSelectableSeats(activity)
         let seats = body.seats;
         seatManager.setAllSeats(activity, seatIds, seats); // sets all seat data (per seat - id, whether premium or not, whether available or not)
         seatManager.styleSeats(seats, activity);
-        seatManager.setNumberOfSelectableSeats(0); // prevents the user from selecting seats before having selected a session
     }
     else
     {

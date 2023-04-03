@@ -39,7 +39,7 @@ class SeatManager
         this.seats = seatsData;
         this.seats.forEach(seat => 
         {
-           $("#" + seat.seatId).first().on("click", () => this.toggleSeatSelected(seat.seatId)); 
+           $("#" + seat.seatId).first().off('click').on("click", () => this.toggleSeatSelected(seat.seatId)); 
         });
     }
 
@@ -94,7 +94,7 @@ class SeatManager
      async retrieveAllSeatsData()
     {
         let sessionIdParameter = ""; // the default, if no session (film or show) has been selected
-        
+        // CONTINUE HERE!
         return fetch("http://localhost:3001/get-cinema-seat-data" + sessionIdParameter, 
         {
             method: "GET",
