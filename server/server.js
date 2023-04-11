@@ -321,7 +321,7 @@ app.post("/cancel-booking", async (req, res) =>
 app.get("/get-cinema-seat-data", async (req, res) =>
 {
     let seatingManager = new SeatingManager("cinema");
-    let bookableSession = req.query.sessionId; // this can be null if no film or show has been selectec yet, in  which case all seats will be displayed as available until one is selected
+    let bookableSession = req.query.sessionId; // this can be null if no film or show has been selected yet, in  which case all seats will be displayed as available until one is selected
     let results = await seatingManager.getSeats(bookableSession);
     let result = results.result;
     if (result === "success")

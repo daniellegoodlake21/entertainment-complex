@@ -34,6 +34,34 @@ class SeatingManager
             return [];
         }
     }
+
+    async getSeatsForBooking(bookingId)
+    {
+        let sql = "SELECT " + this.activity + "_seat_id FROM bookings_" + this.activity + "_seats_links WHERE booking_id = " +  bookingId + ";";
+        try
+        {
+            let results = await dbConnection.runQuery(sql);
+            let bookingSeats = [];
+            for (let i = 0; i < results.length; i++)
+            {
+                if (this.activity === "cinema")
+                {
+                    bookingSeats.push(results[i].cinema_seat_id);
+                }
+                else
+                {
+                    bookingSeats.push(results[i].theatre_seat_id);
+                }
+            }
+            return bookingSeats;
+        }
+        catch (err)
+        {
+            console.log(err);
+            return [];
+        }
+    }
+
     async getSeats(bookableSessionId = null)
     {
         let sql = "SELECT * FROM " + this.activity + "_seats;";
@@ -66,7 +94,24 @@ class SeatingManager
             console.log(err);
             return {result: "error"};
         }
-    }   
+    }
+    
+    async reserveSeats(bookingId, seatIds)
+    {
+        for (let i = 0; i < seatIds.length; i++)
+        {
+            let sql = "INSERT INTO bookings_" + this.activity + "_seats_links VALUES (" + bookingId + ", '" + seatIds[i] + "');";
+            try
+            {
+                await dbConnection.runQuery(sql);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        return true;        
+    }
 }
 
 export default SeatingManager;

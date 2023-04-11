@@ -94,6 +94,10 @@ export async function addToBasket(e, activity, {setBasket}, {navigate})
         // get user input for basic booking details. The date is included in the bookable session so only the number of adults and children are needed.
         let adults = selectedSession.first().find(".number-of-adults option:selected").first().val();
         let children = selectedSession.first().find("div .number-of-children option:selected").first().val();
+        if (activity === "cinema" || activity === "theatre")
+        {
+            children = 0; // children are not distinguished from adults for these activities
+        }
         // get user input for snacks
         let snackElements = $("#snacks-list").children().children();
         let snackData = [];

@@ -1,6 +1,7 @@
 import dbConnection from "./db-connection.js";
 import BookingSnackManager from "./booking-snack-manager.js";
 import BookableSessionManager from "./bookable-session-manager.js";
+import SeatingManager from "./seating-manager.js";
 
 class BookingManager
 {
@@ -68,8 +69,17 @@ class BookingManager
                     adults: results[i].number_of_adults,
                     children: results[i].number_of_children,
                 }
-                let res = await this.retrieveBowlingData(booking.bookingId);
-                booking.additionalDetails = res;
+                if (booking.activity === "bowling")
+                {
+                    let res = await this.retrieveBowlingData(booking.bookingId);
+                    booking.additionalDetails = res;
+                }
+                else if (booking.activity === "cinema" || booking.activity === "theatre")
+                {
+                    let seatingManager = new SeatingManager(booking.activity);
+                    let res = await seatingManager.getSeatsForBooking(booking.bookingId);
+                    booking.additionalDetails = {seatIds: res};
+                }
                 bookings.push(booking);
             }
             return {result : "success", bookings};
@@ -145,13 +155,24 @@ class BookingManager
                         let snack = booking.snackData[j];
                         await snackManager.saveSnackBookingLink(result.insertId, snack.snackId, snack.snackQuantity);
                     }
+                    let bookingId = result.insertId;
                     // if this booking has activity-specific additional details, then save them also
                     if (booking.activity === "bowling")
                     {
-                        let bookingId = result.insertId;
+               
                         let res = await this.saveBowlingData(bookingId, booking.additionalDetails.games, booking.additionalDetails.rails);
                         if (!res)
                         {
+                            return {result: "error"};
+                        }
+                    }
+                    else if (booking.activity === "cinema" || booking.activity === "theatre")
+                    {
+                        let seatingManager = new SeatingManager(booking.activity);
+                        let reserved = await seatingManager.reserveSeats(bookingId, booking.additionalDetails.seatIds);
+                        if (!reserved)
+                        {
+                            // there was an error reserving seats
                             return {result: "error"};
                         }
                     }
@@ -232,6 +253,8 @@ class BookingManager
             sql = "DELETE FROM bookings_snacks_links WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
             sql = "DELETE FROM bowling WHERE booking_id = " + bookingId + ";";
+            await dbConnection.runQuery(sql);
+            sql = "DELETE FROM bookings_cinema_seats_links WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
             return {result: "success"};
         }

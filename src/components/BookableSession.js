@@ -105,7 +105,7 @@ function BookableSession({session})
             // if applicable, add the number of children input option
             if (session.activity === "bowling" || session.activity === "iceSkating")
             {
-                output +=  <div><label htmlFor="number-of-children">Select number of children:</label>
+                return <div><label htmlFor="number-of-children">Select number of children:</label>
                             <br/>
                                 <select className="number-of-children" name="number-of-children">
                                     <option value="0">0</option>
