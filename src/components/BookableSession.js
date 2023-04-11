@@ -53,9 +53,10 @@ function BookableSession({session})
         // display the number of attendees input and label
         $(e.target).parent().siblings(".attendees-outer").removeAttr("hidden");
         outer.siblings(".booking-time-slot-outer").children(".attendees-outer").attr("hidden", "true");
-        let adults = $(".number-of-adults").first().find("option:selected").first().val();
-        let children = $(".number-of-children").first().find("option:selected").first().val();
+        let adults = $(".selected .attendees-outer .number-of-adults").first().find("option:selected").first().val();
+        let children = $(".selected .attendees-outer .number-of-children").first().find("option:selected").first().val();
         updateBookingPrice(adults, children);
+        alert(adults);
         $(".invalid-booking-message").text("");
         setupSeats(true); // checks if applicable activity, and if so, sets seat data
 
