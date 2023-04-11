@@ -56,7 +56,6 @@ function BookableSession({session})
         let adults = $(".selected .attendees-outer .number-of-adults").first().find("option:selected").first().val();
         let children = $(".selected .attendees-outer .number-of-children").first().find("option:selected").first().val();
         updateBookingPrice(adults, children);
-        alert(adults);
         $(".invalid-booking-message").text("");
         setupSeats(true); // checks if applicable activity, and if so, sets seat data
 
