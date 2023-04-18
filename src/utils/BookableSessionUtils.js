@@ -184,6 +184,10 @@ export async function resetBookableSessions(activity, setBSessions)
         setBSessions([]);
         $(".time-slots-message").text("Please select a date first.");
     }
+    $("#basic-package-price").text("0.00");
+    seatManager.setNumberOfSelectableSeats(0);
+    updateTotalPrice(null, false); /* this only resets the price to the initial cost
+    for 1 adult for the session, therefore hasChildPrice (second argument) is irrelevant regardless of the activity */
 }
 
 // retrieve the activity sessions available to reserve
