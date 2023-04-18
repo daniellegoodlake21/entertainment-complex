@@ -169,7 +169,7 @@ class BookingManager
                     else if (booking.activity === "cinema" || booking.activity === "theatre")
                     {
                         let seatingManager = new SeatingManager(booking.activity);
-                        let reserved = await seatingManager.reserveSeats(bookingId, booking.additionalDetails.seatIds);
+                        let reserved = await seatingManager.reserveSeats(booking.sessionId, booking.additionalDetails.seatIds);
                         if (!reserved)
                         {
                             // there was an error reserving seats
