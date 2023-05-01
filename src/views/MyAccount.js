@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import Booking from "../components/Booking.js";
 import $ from "jquery";
-import { getLinkedSnacksDetails } from "../utils/BookingUtils.js";
+import { handleDatabaseBookings } from "../utils/BookingUtils.js";
 const retrieveConfirmedBookings = async (token, userId) =>
 {
   return fetch("http://localhost:3001/confirmed-bookings",
@@ -36,31 +36,7 @@ export default function MyAccount()
       {
         // retrieve the associated snack data and price for each booking
         bookings = body.bookings;
-        for (let i = 0; i < bookings.length; i++)
-        {
-          let booking = bookings[i];
-          let totalPrice = (booking.childPrice * booking.children) + (booking.adultPrice * booking.adults);
-          // snack data
-          let bookingId = booking.bookingId;
-          let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
-          if (snackData.status)
-          {
-              snackData = await snackData.body;
-              bookings[i].snackData = snackData.snackData;
-              for (let j = 0; j < booking.snackData.length; j++)
-              {
-                let snackPrice = booking.snackData[j].snackPrice;
-                let snackQuantity = booking.snackData[j].snackQuantity;
-                totalPrice += snackPrice * snackQuantity;
-              }
-              bookings[i].totalPrice = totalPrice;
-          }
-          else
-          {
-            $(".confirmed-bookings-message").text("There was a problem retrieving snacks within your confirmed bookings.");
-          }
-      
-        }
+        bookings = await handleDatabaseBookings(bookings, token, true);
         // map the data to Booking components
         let i = 0;
         bookings = bookings.map(booking => 
@@ -68,26 +44,15 @@ export default function MyAccount()
           i++;
           return (<Booking key={i} index={i} booking={booking} setBookingData={setBookingData} token={token}/>);
         });
-        setBookingData(bookings);
       }
-      else
-      {
-        $(".confirmed-bookings-message").text("You currently have no confirmed bookings.");
-        setBookingData([]);
-      }
+      
+      setBookingData(bookings);
     }
-    else
-    {
-      $(".confirmed-bookings-message").text("There was a problem retrieving your confirmed bookings.");
-      setBookingData([]);
-    }
-
-
   }
   // run on page load
   useEffect(() =>{
     loadPage();
-  }, [bookingData]);
+  }, []);
   return (<div className="confirmed-bookings-section">
         <h1 className="title text-light central-header">My Bookings</h1>
         <h5 className="booking-cancellation-status-message text-light central-header"></h5>

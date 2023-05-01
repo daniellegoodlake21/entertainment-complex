@@ -1,8 +1,9 @@
 import $ from "jquery";
 import Booking from "../components/Booking.js";
-
 /* Shared methods for managing bookings */
 
+const CINEMA_PREMIUM_SEAT_ADDITIONAL_COST = 2;
+export default CINEMA_PREMIUM_SEAT_ADDITIONAL_COST;
 // save the booking either to be displayed in the basket (if isConfirmed = false) or the 'My Account' page's confirmed bookings
 export async function saveBooking(bookings, isConfirmed)
 {
@@ -115,6 +116,10 @@ export async function loadFromLocalStorage(token)
                 {
                     totalPrice = totalPrice * additionalDetails.games;
                 }
+                if (activity === "cinema")
+                {
+                    totalPrice += additionalDetails.premiumSeatCount * CINEMA_PREMIUM_SEAT_ADDITIONAL_COST;
+                }
                 let snackData = [];
                 for (let j = 0; j < basketItem.snackData.length; j++)
                 {
@@ -148,6 +153,76 @@ export async function loadFromLocalStorage(token)
     }
     return bookings;
 }
+// handle  details once basic booking information is retrieved from database
+export async function handleDatabaseBookings(bookings, token, confirmed)
+{
+    if (bookings.length === 0)
+    {
+        $(".purchase-btn").attr("disabled", "disabled");
+        if (confirmed)
+        {
+            $(".confirmed-bookings-message").text("You currently have no confirmed bookings.");
+        }
+        else
+        {
+            $(".basket-error-message").text("You have no bookings currently in your basket.");
+        }
+    }
+    else
+    {
+        if (confirmed)
+        {
+            $(".confirmed-bookings-message").text("");
+        }
+        else
+        {
+            $(".basket-error-message").text("");
+            $(".purchase-btn").removeAttr("disabled");        
+        }
+
+    }
+    for (let i = 0; i < bookings.length; i++)
+    {
+        let bookingId = bookings[i].bookingId;
+        bookings[i].totalPrice = (bookings[i].childPrice * bookings[i].children) + (bookings[i].adultPrice * bookings[i].adults);
+        let userId = localStorage.getItem("userId");
+        // modify total price if necessary depending on the booking type
+        if (bookings[i].activity === "bowling")
+        {
+            bookings[i].totalPrice = bookings[i].totalPrice * bookings[i].additionalDetails.games;
+        }
+        if (bookings[i].activity === "cinema")
+        {
+            bookings[i].totalPrice += bookings[i].additionalDetails.premiumSeatCount * CINEMA_PREMIUM_SEAT_ADDITIONAL_COST;
+        }
+        // get snack data and add to total price
+        let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
+        if (snackData.status)
+        {
+            snackData = await snackData.body;
+            bookings[i].snackData = snackData.snackData;
+            for (let j = 0; j < bookings[i].snackData.length; j++)
+            {
+                let snackPrice = bookings[i].snackData[j].snackPrice;
+                let snackQuantity = bookings[i].snackData[j].snackQuantity;
+                bookings[i].totalPrice += snackPrice * snackQuantity;
+            }
+        }
+        else
+        {
+            if (confirmed)
+            {
+                $(".confirmed-bookings-message").text("There was a problem retrieving your confirmed bookings.");
+            }
+            else
+            {
+                $(".basket-error-message").text("There was a problem accessing snacks within bookings in your basket.");
+            }
+        }
+
+    }  
+    return bookings;
+}
 /* load the bookings from the database */
 export async function loadFromDatabase(token)
 {
@@ -158,44 +233,7 @@ export async function loadFromDatabase(token)
     {
         let body = await res.body;
         bookings = body.bookings;
-        if (bookings.length === 0)
-        {
-            $(".purchase-btn").attr("disabled", "disabled");
-            $(".basket-error-message").text("You have no bookings currently in your basket.");
-        }
-        else
-        {
-            $(".basket-error-message").text("");
-            $(".purchase-btn").removeAttr("disabled");
-        }
-        for (let i = 0; i < bookings.length; i++)
-        {
-            let bookingId = bookings[i].bookingId;
-            bookings[i].totalPrice = (bookings[i].childPrice * bookings[i].children) + (bookings[i].adultPrice * bookings[i].adults);
-            let userId = localStorage.getItem("userId");
-            // multiply total price if necessary depending on the booking type
-            if (bookings[i].activity === "bowling")
-            {
-                bookings[i].totalPrice = bookings[i].totalPrice * bookings[i].additionalDetails.games;
-            }
-            // get snack data and add to total price
-            let snackData = await getLinkedSnacksDetails(bookingId, token, userId);
-            if (snackData.status)
-            {
-                snackData = await snackData.body;
-                bookings[i].snackData = snackData.snackData;
-                for (let j = 0; j < bookings[i].snackData.length; j++)
-                {
-                    let snackPrice = bookings[i].snackData[j].snackPrice;
-                    let snackQuantity = bookings[i].snackData[j].snackQuantity;
-                    bookings[i].totalPrice += snackPrice * snackQuantity;
-                }
-            }
-            else
-            {
-                $(".basket-error-message").text("There was a problem accessing snacks within bookings in you basket.");
-            }
-        }
+        bookings = await handleDatabaseBookings(bookings, token, false);
     }
     else
     {
@@ -215,6 +253,10 @@ export async function getTotalPrice(bookings, setTotalPrice)
         if (booking.activity === "bowling")
         {
             subtotal = subtotal * booking.additionalDetails.games;
+        }
+        if (booking.activity === "cinema")
+        {
+            subtotal += booking.additionalDetails.premiumSeatCount * CINEMA_PREMIUM_SEAT_ADDITIONAL_COST;
         }
         for (let j = 0; j < booking.snackData.length; j++)
         {

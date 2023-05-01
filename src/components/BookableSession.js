@@ -90,9 +90,9 @@ function BookableSession({session})
             return <p>Price Per Person:<br/>Adult: £<span className="adult-price">{session.adultPrice.toFixed(2)}</span><br/>Child: £<span className="child-price">{session.childPrice.toFixed(2)}</span></p>;
               
         }
-        else
+        else if (session.activity === "cinema")
         {
-            return <p>Price Per Person: £<span className="adult-price">{session.adultPrice.toFixed(2)}</span></p>
+            return <p>Price Per Person: £<span className="adult-price">{session.adultPrice.toFixed(2)}</span><br/>+£2 per Premium Seat</p>
         }
     }
 

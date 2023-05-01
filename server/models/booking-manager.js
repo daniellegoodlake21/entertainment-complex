@@ -74,11 +74,11 @@ class BookingManager
                     let res = await this.retrieveBowlingData(booking.bookingId);
                     booking.additionalDetails = res;
                 }
-                else if (booking.activity === "cinema" || booking.activity === "theatre")
+                else if (booking.activity === "cinema")
                 {
                     let seatingManager = new SeatingManager(booking.activity);
                     let res = await seatingManager.getSeatsForBooking(booking.bookingId);
-                    booking.additionalDetails = {seatIds: res};
+                    booking.additionalDetails = {seatIds: res.seatIds, premiumSeatCount: res.premiumSeatCount};
                 }
                 bookings.push(booking);
             }

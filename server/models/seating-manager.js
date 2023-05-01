@@ -53,7 +53,21 @@ class SeatingManager
                     bookingSeats.push(results[i].theatre_seat_id);
                 }
             }
-            return bookingSeats;
+            let premiumSeatCount = 0;
+            sql = "SELECT * FROM " + this.activity + "_seats WHERE premium = 1";
+            if (this.activity === "cinema")
+            {
+                let premiumSeats = await dbConnection.runQuery(sql);
+                for (let i = 0; i < premiumSeats.length; i++)
+                {
+                    if (bookingSeats.includes(premiumSeats[i].seat_id))
+                    {
+                        premiumSeatCount++;
+                    }
+                }             
+            }
+            return {seatIds: bookingSeats, premiumSeatCount: premiumSeatCount};   
+
         }
         catch (err)
         {

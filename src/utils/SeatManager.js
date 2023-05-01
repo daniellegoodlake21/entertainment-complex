@@ -1,5 +1,5 @@
 import $ from "jquery";
-
+import CINEMA_PREMIUM_SEAT_ADDITIONAL_COST from "./BookingUtils.js";
 class SeatManager
 {
     constructor()
@@ -8,9 +8,9 @@ class SeatManager
         this.numberOfSelectableSeats = 0;
         this.totalPrice = 0;
         this.selectedSeatIds = [];
+        this.premiumSeatCount = 0;
     }
 
-    
     // get all selected seat ids to be added to the basket
     getSelectedSeatIds()
     {
@@ -39,39 +39,13 @@ class SeatManager
         this.seats = seatsData;
         this.seats.forEach(seat => 
         {
-           $("#" + seat.seatId).first().off('click').on("click", () => this.toggleSeatSelected(seat.seatId)); 
-        });
-    }
-
-    // get total price of all selected seats, charging more for better seats
-    calculateTotalPrice()
-    {
-        const cinemaPremiumSeatMultiplier = 1.5;
-        if (this.seats == undefined)
-        {
-            $(".invalid-booking-message").text("Please select a film to see first.");
-            this.totalPrice = (0).toFixed(2);
-        }
-        else
-        {
-            // for cinema and theatre bookings, there is one shared price for all guests (adult-price) regarldess of age
-            let pricePerSeat = Number($(".booking-time-slot-outer.selected .booking-time-slot-item p .adult-price").first().text());
-            this.totalPrice = 0;
-            for (let i = 0; i < this.seats.length; i++)
+            let additionalCost;
+            if (activity === "cinema")
             {
-                
-                let seat = this.seats[i];
-                if (this.activity === "cinema" && seat.premium)
-                {
-                    this.totalPrice += (pricePerSeat * cinemaPremiumSeatMultiplier);
-                }
-                else if (this.activity === "cinema")
-                {
-                    this.totalPrice += pricePerSeat;
-                }
+                additionalCost = seat.premium ? CINEMA_PREMIUM_SEAT_ADDITIONAL_COST : 0; // add £2 for each premium cinema seat
+                $("#" + seat.seatId).first().off('click').on("click", () => this.toggleSeatSelected(seat.seatId, additionalCost));                      
             }
-        }
-        return this.totalPrice;
+        });
     }
 
     // reset (deselect) selected seats
@@ -79,6 +53,7 @@ class SeatManager
     {
         $(".seat").removeClass("selected");
         this.selectedSeatIds = [];
+        this.premiumSeatCount = 0;
     }
 
 
@@ -87,7 +62,6 @@ class SeatManager
     {
         this.numberOfSelectableSeats = numberOfSelectableSeats;
         this.deselectAllSeats();
-        this.calculateTotalPrice();
     }
 
     // retrieve seat data from the database
@@ -148,8 +122,28 @@ class SeatManager
     }
 
     // this is called when the user clicks on a seat to either select or deselect it
-    async toggleSeatSelected(seatId)
+    async toggleSeatSelected(seatId, additionalCost)
     {
+        const toggleAdditionalCost = (isAddition) =>
+        {
+            let currentPrice = Number($("#basic-package-price").text());
+            let updatedPrice = isAddition ? currentPrice + additionalCost : currentPrice - additionalCost;
+            $("#basic-package-price").text(updatedPrice.toFixed(2));
+            let extrasPrice = Number($("#booking-extras-price").text());
+            $("#total-price").text((updatedPrice + extrasPrice).toFixed(2));
+            // if premium *cinema* seat (therefore only 2 types of seat - standard and premium) add to/subtract from premium seat count
+            if (additionalCost === CINEMA_PREMIUM_SEAT_ADDITIONAL_COST)
+            {
+                if (isAddition)
+                {
+                    this.premiumSeatCount++;
+                }
+                else
+                {
+                    this.premiumSeatCount--;
+                }
+            }
+        }
         // seats are only selectable once a session has been selected
         if ($(".booking-time-slot-outer.selected").length === 1)
         {
@@ -169,16 +163,24 @@ class SeatManager
                         return;
                     }
                     this.selectedSeatIds.push(seatId);
+                    toggleAdditionalCost(true);
                     this.numberOfSelectableSeats--;
                 }
                 else
                 {
                     this.numberOfSelectableSeats++;
                     this.removeSelectedSeatId(seatId);
+                    toggleAdditionalCost(false);
                 }
                 $("#" + seatId).first().toggleClass("selected");
             }
         }
+    }
+    
+    // used to update price when adding to basket
+    getSelectedPremiumSeatCount()
+    {
+        return this.premiumSeatCount;
     }
 }
 

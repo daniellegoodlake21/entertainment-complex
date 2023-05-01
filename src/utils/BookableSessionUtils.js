@@ -131,6 +131,7 @@ export async function addToBasket(e, activity, {setBasket}, {navigate})
             else
             {
                 additionalDetails.seatIds = seatManager.getSelectedSeatIds();
+                additionalDetails.premiumSeatCount = seatManager.getSelectedPremiumSeatCount();
             }
         }
         // add the booking to the basket
