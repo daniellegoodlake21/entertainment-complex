@@ -224,6 +224,21 @@ class BookingManager
             return false;
         }
     }
+
+    async getSessionId(bookingId)
+    {
+        let sql = "SELECT session_id FROM bookings WHERE bookings.booking_id = " + bookingId + ";";
+        try
+        {
+            let results = await dbConnection.runQuery(sql);
+            return results[0].session_id;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
     /* Deletes a booking (either in-basket or confirmed) and its associated booking-snack-links */
     async deleteBooking(bookingId)
     {    
@@ -248,13 +263,14 @@ class BookingManager
                 }
             }
             // now delete the booking and its related data
-            let sql = "DELETE FROM bookings WHERE booking_id = " + bookingId + ";";
-            await dbConnection.runQuery(sql);
-            sql = "DELETE FROM bookings_snacks_links WHERE booking_id = " + bookingId + ";";
+            let sql = "DELETE FROM bookings_snacks_links WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
             sql = "DELETE FROM bowling WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
-            sql = "DELETE FROM bookings_cinema_seats_links WHERE booking_id = " + bookingId + ";";
+            let sessionId = await this.getSessionId(bookingId);
+            sql = "DELETE bookings_cinema_seats_links FROM bookings_cinema_seats_links LEFT JOIN bookable_sessions ON bookings_cinema_seats_links.booking_id = bookable_sessions.session_id WHERE bookable_sessions.session_id = " + sessionId + ";";
+            await dbConnection.runQuery(sql);
+            sql = "DELETE FROM bookings WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
             return {result: "success"};
         }
