@@ -37,7 +37,7 @@ class SeatingManager
 
     async getSeatsForBooking(bookingId)
     {
-        let sql = "SELECT " + this.activity + "_seat_id FROM bookings_" + this.activity + "_seats_links WHERE booking_id = " +  bookingId + ";";
+        let sql = "SELECT " + this.activity + "_seat_id FROM bookings_" + this.activity + "_seats_links LEFT JOIN bookable_sessions ON bookable_sessions.session_id = bookings_" + this.activity + "_seats_links.booking_id INNER JOIN bookings ON bookings.session_id = bookable_sessions.session_id AND bookings.booking_id = " +  bookingId + ";";
         try
         {
             let results = await dbConnection.runQuery(sql);
