@@ -1,4 +1,5 @@
 import $ from "jquery";
+import seatManager from "./SeatManager.js";
 /* Shared functions for all pages that let you view bookable sessions
 and add them to your basket. For example, ice skating and bowling. */
 
@@ -34,7 +35,7 @@ export async function getSnacks(activity)
     }).catch((err) => console.log(err)).then(data => ({status: data.ok, body: data.json()}));
 }
 // update total price
-export function updateTotalPrice(e=null)
+export function updateTotalPrice(e=null, hasChildPrice=true)
 {
     
     if (e)
@@ -47,12 +48,16 @@ export function updateTotalPrice(e=null)
             let adults = selectedSession.first().find(".number-of-adults option:selected").first().val();
             let adultPrice = selectedSession.first().find(".adult-price").first().text();
             let priceForAllAdults = adults * Number(adultPrice);
-            // get total price for all children
-            let children = selectedSession.first().find(".number-of-children option:selected").first().val();
-            let childPrice = selectedSession.first().find(".child-price").first().text();
-            let priceForAllChildren = children * Number(childPrice);
-            // set new basic package price
-            let price = priceForAllAdults + priceForAllChildren;
+            let price = priceForAllAdults;
+            if (hasChildPrice)
+            {
+                // get total price for all children
+                let children = selectedSession.first().find("div .number-of-children option:selected").first().val();
+                let childPrice = selectedSession.first().find(".child-price").first().text();
+                let priceForAllChildren = children * Number(childPrice);
+                // set new basic package price
+                price = priceForAllAdults + priceForAllChildren;       
+            }
             let newPrice = (price * Number(e.target.value)).toFixed(2);
             $("#basic-package-price").first().text(newPrice);
         }
@@ -71,7 +76,7 @@ export async function addToBasket(e, activity, {setBasket}, {navigate})
 {
     e.preventDefault();
     let selectedSession = $(".booking-time-slot-outer.selected");
-    if (selectedSession.length == 0)
+    if (selectedSession.length === 0)
     {
         // set invalid booking message - no time slot selected
         $(".invalid-booking-message").text("Invalid input. Please select a time slot.");
@@ -88,13 +93,16 @@ export async function addToBasket(e, activity, {setBasket}, {navigate})
         $(".invalid-booking-message").text("");
         // get user input for basic booking details. The date is included in the bookable session so only the number of adults and children are needed.
         let adults = selectedSession.first().find(".number-of-adults option:selected").first().val();
-        let children = selectedSession.first().find(".number-of-children option:selected").first().val();
+        let children = selectedSession.first().find("div .number-of-children option:selected").first().val();
+        if (activity === "cinema" || activity === "theatre")
+        {
+            children = 0; // children are not distinguished from adults for these activities
+        }
         // get user input for snacks
         let snackElements = $("#snacks-list").children().children();
         let snackData = [];
         for (let i = 0; i < snackElements.length; i++)
         {
-            let snackElement = $("#snacks-list .snack-item:nth-child("+String(i+1)+")")[0];
             let quantity = $("#snacks-list .snack-item:nth-child("+String(i+1)+") option:selected").val();
             let id = $("#snacks-list .snack-item:nth-child("+String(i+1)+")").attr("id").replace("snack", "");
             if (quantity > 0)
@@ -112,6 +120,20 @@ export async function addToBasket(e, activity, {setBasket}, {navigate})
         {
             additionalDetails.games = $(".number-of-games option:selected").first().val();
             additionalDetails.rails = $(".customize-bowling .rails-up").is(":checked");
+        }
+        else if (activity === "cinema" || activity === "theatre")
+        {
+            additionalDetails.showTitle = $(".booking-time-slot-outer.selected .show-details h4").first().text();
+            if (!seatManager.validateSeatSelections())
+            {
+                $(".invalid-booking-message").text("Invalid input. Please select the same number of seats as the number of people attending.");
+                return;
+            }
+            else
+            {
+                additionalDetails.seatIds = seatManager.getSelectedSeatIds();
+                additionalDetails.premiumSeatCount = seatManager.getSelectedPremiumSeatCount();
+            }
         }
         // add the booking to the basket
         let sessionId = selectedSession.attr("id");
@@ -164,9 +186,13 @@ export async function resetBookableSessions(activity, setBSessions)
         setBSessions([]);
         $(".time-slots-message").text("Please select a date first.");
     }
+    $("#basic-package-price").text("0.00");
+    seatManager.setNumberOfSelectableSeats(0);
+    updateTotalPrice(null, false); /* this only resets the price to the initial cost
+    for 1 adult for the session, therefore hasChildPrice (second argument) is irrelevant regardless of the activity */
 }
 
-// retrieve the ice skating sessions available to reserve
+// retrieve the activity sessions available to reserve
 export async function retrieveBookableSessions(e, activity, setBSessions)
 {
     if (e.target.value === "")
@@ -241,5 +267,24 @@ export async function retrieveBookableSessions(e, activity, setBSessions)
         {
             $(".time-slots-message").text("There was a problem retrieving sessions.");
         }
+    }
+} 
+
+// load and style seats
+export async function setSelectableSeats(activity)
+{
+    let seatIds = [];
+    $(".seat").each(() => seatIds.push($(this).attr("id")));
+    let res = await seatManager.retrieveAllSeatsData();
+    if (res.status)
+    {
+        let body = await res.body;
+        let seats = body.seats;
+        seatManager.setAllSeats(activity, seatIds, seats); // sets all seat data (per seat - id, whether premium or not, whether available or not)
+        seatManager.styleSeats(seats, activity);
+    }
+    else
+    {
+      $(".invalid-booking-message").text("There was a problem retrieving seat data.");
     }
 }

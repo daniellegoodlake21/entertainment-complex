@@ -1,6 +1,7 @@
 import dbConnection from "./db-connection.js";
 import BookingSnackManager from "./booking-snack-manager.js";
 import BookableSessionManager from "./bookable-session-manager.js";
+import SeatingManager from "./seating-manager.js";
 
 class BookingManager
 {
@@ -68,8 +69,25 @@ class BookingManager
                     adults: results[i].number_of_adults,
                     children: results[i].number_of_children,
                 }
-                let res = await this.retrieveBowlingData(booking.bookingId);
-                booking.additionalDetails = res;
+                let res;
+                if (booking.activity === "bowling")
+                {
+                    res = await this.retrieveBowlingData(booking.bookingId);
+                    booking.additionalDetails = res;
+                }
+                else if (booking.activity === "cinema")
+                {
+                    let seatingManager = new SeatingManager(booking.activity);
+                    res = await seatingManager.getSeatsForBooking(booking.bookingId);
+                    booking.additionalDetails = {seatIds: res.seatIds, premiumSeatCount: res.premiumSeatCount};
+                }
+                if (booking.activity === "cinema" || booking.activity === "theatre")
+                {
+                    sql = "SELECT title FROM show_details, bookable_sessions WHERE show_details.show_id = bookable_sessions.show_details_id AND bookable_sessions.session_id = " + booking.sessionId + ";";
+                    res = await dbConnection.runQuery(sql);
+                    let showTitle = res[0].title;
+                    booking.additionalDetails.showTitle = showTitle;
+                }
                 bookings.push(booking);
             }
             return {result : "success", bookings};
@@ -145,13 +163,24 @@ class BookingManager
                         let snack = booking.snackData[j];
                         await snackManager.saveSnackBookingLink(result.insertId, snack.snackId, snack.snackQuantity);
                     }
+                    let bookingId = result.insertId;
                     // if this booking has activity-specific additional details, then save them also
                     if (booking.activity === "bowling")
                     {
-                        let bookingId = result.insertId;
+               
                         let res = await this.saveBowlingData(bookingId, booking.additionalDetails.games, booking.additionalDetails.rails);
                         if (!res)
                         {
+                            return {result: "error"};
+                        }
+                    }
+                    else if (booking.activity === "cinema" || booking.activity === "theatre")
+                    {
+                        let seatingManager = new SeatingManager(booking.activity);
+                        let reserved = await seatingManager.reserveSeats(booking.sessionId, booking.additionalDetails.seatIds);
+                        if (!reserved)
+                        {
+                            // there was an error reserving seats
                             return {result: "error"};
                         }
                     }
@@ -203,6 +232,21 @@ class BookingManager
             return false;
         }
     }
+
+    async getSessionId(bookingId)
+    {
+        let sql = "SELECT session_id FROM bookings WHERE bookings.booking_id = " + bookingId + ";";
+        try
+        {
+            let results = await dbConnection.runQuery(sql);
+            return results[0].session_id;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
     /* Deletes a booking (either in-basket or confirmed) and its associated booking-snack-links */
     async deleteBooking(bookingId)
     {    
@@ -227,11 +271,14 @@ class BookingManager
                 }
             }
             // now delete the booking and its related data
-            let sql = "DELETE FROM bookings WHERE booking_id = " + bookingId + ";";
-            await dbConnection.runQuery(sql);
-            sql = "DELETE FROM bookings_snacks_links WHERE booking_id = " + bookingId + ";";
+            let sql = "DELETE FROM bookings_snacks_links WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
             sql = "DELETE FROM bowling WHERE booking_id = " + bookingId + ";";
+            await dbConnection.runQuery(sql);
+            let sessionId = await this.getSessionId(bookingId);
+            sql = "DELETE bookings_cinema_seats_links FROM bookings_cinema_seats_links LEFT JOIN bookable_sessions ON bookings_cinema_seats_links.booking_id = bookable_sessions.session_id WHERE bookable_sessions.session_id = " + sessionId + ";";
+            await dbConnection.runQuery(sql);
+            sql = "DELETE FROM bookings WHERE booking_id = " + bookingId + ";";
             await dbConnection.runQuery(sql);
             return {result: "success"};
         }

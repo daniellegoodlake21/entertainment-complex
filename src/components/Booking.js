@@ -32,7 +32,7 @@ function Booking({index, booking, setBookingData, setTotalPrice})
                 for (let i = 0; i < basketItems.items.length; i++)
                 {
                  
-                    if (basketItems.items[i].sessionId = booking.sessionId)
+                    if (basketItems.items[i].sessionId == booking.sessionId)
                     {
               
                         basketItems.items.splice(i, 1);
@@ -73,7 +73,8 @@ function Booking({index, booking, setBookingData, setTotalPrice})
     let activity = booking.activity;
     let uppercaseFirstLetter = activity.slice(0,1).toUpperCase();
     activity = uppercaseFirstLetter + activity.replace(/([A-Z])/g, ' $1').trim().slice(1, activity.length+1);
-    let keyIndex = 0;
+    let snackIndex = 0;
+    let seatIndex = 0;
     let date = new Date(booking.date);
 
     // if no snacks display message below snacks header
@@ -87,6 +88,42 @@ function Booking({index, booking, setBookingData, setTotalPrice})
     
     let key = "booking-" + index;
 
+    let attendeeDetails = () =>
+    {
+        if (booking.activity === "cinema" | booking.activity === "theatre")
+        {
+            return <div><p>Number of attendees: {booking.adults}</p></div>;
+        }
+        else
+        {
+            return <div><p>Number of adults attending: {booking.adults}</p>
+            <p>Number of children attending: {booking.children}</p></div>;
+        }
+    } 
+    let seatReservations = () =>
+    {
+        if (booking.activity === "cinema" || booking.activity === "theatre")
+        {
+            return <div>
+                <h5>Seats:</h5>
+                <ul>
+                    {
+                        booking.additionalDetails.seatIds.map(seatId=>
+                        {
+                            seatIndex++;
+                            return <li key={seatIndex}>{seatId.toUpperCase()}</li>;
+                        })
+                    }
+                </ul>
+            </div>
+        }
+        else
+        {
+            return null;
+        }
+
+    }
+
     let additionalDetails = () =>
     {
         if (booking.activity === "bowling")
@@ -98,25 +135,30 @@ function Booking({index, booking, setBookingData, setTotalPrice})
                         <p>{railsUpText}</p>
                     </div>;
         }
+        else if (booking.activity === "cinema" || "theatre")
+        {
+            return <div>
+                        <h4>Film Title: <strong>{booking.additionalDetails.showTitle}</strong></h4>
+                    </div>;
+        }
         return null;
     }
 
     return (
     <div className="booking-data-item added-booking" id={key}>
         <h3>{activity}</h3>
-        
-        <h4>{date.getDate()}/{date.getMonth()+1}/{date.getFullYear()} at {booking.time.slice(0, 5)}</h4>
-        <p>Number of adults attending: {booking.adults}</p>
-        <p>Number of children attending: {booking.children}</p>
         <div>{additionalDetails()}</div>
+        <h4>{date.getDate()}/{date.getMonth()+1}/{date.getFullYear()} at {booking.time.slice(0, 5)}</h4>
+        {attendeeDetails()}
+        {seatReservations()}
         <h4>Booking Extras:</h4>
         <h5>Snacks:</h5>
         <ul>
             {
                 booking.snackData.map(snack=>
                     {
-                        keyIndex++;
-                        return <li key={keyIndex}>{snack.snackName} x{snack.snackQuantity}</li>;
+                        snackIndex++;
+                        return <li key={snackIndex}>{snack.snackName} x{snack.snackQuantity}</li>;
                     })
             }
         </ul>        
