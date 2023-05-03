@@ -191,7 +191,7 @@ export async function handleDatabaseBookings(bookings, token, confirmed)
         {
             bookings[i].totalPrice = bookings[i].totalPrice * bookings[i].additionalDetails.games;
         }
-        if (bookings[i].activity === "cinema")
+        else if (bookings[i].activity === "cinema")
         {
             bookings[i].totalPrice += bookings[i].additionalDetails.premiumSeatCount * CINEMA_PREMIUM_SEAT_ADDITIONAL_COST;
         }

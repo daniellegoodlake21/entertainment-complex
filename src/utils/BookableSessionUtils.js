@@ -123,6 +123,7 @@ export async function addToBasket(e, activity, {setBasket}, {navigate})
         }
         else if (activity === "cinema" || activity === "theatre")
         {
+            additionalDetails.showTitle = $(".booking-time-slot-outer.selected .show-details h4").first().text();
             if (!seatManager.validateSeatSelections())
             {
                 $(".invalid-booking-message").text("Invalid input. Please select the same number of seats as the number of people attending.");

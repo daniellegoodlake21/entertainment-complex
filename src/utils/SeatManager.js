@@ -20,7 +20,7 @@ class SeatManager
     // check that the number of selected seats is equal to the number of guests attending
     validateSeatSelections()
     {
-        let numberOfSelectableSeats = Number($(".number-of-adults").first().find("option:selected").first().val());
+        let numberOfSelectableSeats = Number($(".number-of-adults:visible").first().find("option:selected").first().val());
         if (this.selectedSeatIds.length === numberOfSelectableSeats)
         {
             return true;

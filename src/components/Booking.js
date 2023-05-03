@@ -32,7 +32,7 @@ function Booking({index, booking, setBookingData, setTotalPrice})
                 for (let i = 0; i < basketItems.items.length; i++)
                 {
                  
-                    if (basketItems.items[i].sessionId = booking.sessionId)
+                    if (basketItems.items[i].sessionId == booking.sessionId)
                     {
               
                         basketItems.items.splice(i, 1);
@@ -135,16 +135,21 @@ function Booking({index, booking, setBookingData, setTotalPrice})
                         <p>{railsUpText}</p>
                     </div>;
         }
+        else if (booking.activity === "cinema" || "theatre")
+        {
+            return <div>
+                        <h4>Film Title: <strong>{booking.additionalDetails.showTitle}</strong></h4>
+                    </div>;
+        }
         return null;
     }
 
     return (
     <div className="booking-data-item added-booking" id={key}>
         <h3>{activity}</h3>
-        
+        <div>{additionalDetails()}</div>
         <h4>{date.getDate()}/{date.getMonth()+1}/{date.getFullYear()} at {booking.time.slice(0, 5)}</h4>
         {attendeeDetails()}
-        <div>{additionalDetails()}</div>
         {seatReservations()}
         <h4>Booking Extras:</h4>
         <h5>Snacks:</h5>

@@ -69,16 +69,24 @@ class BookingManager
                     adults: results[i].number_of_adults,
                     children: results[i].number_of_children,
                 }
+                let res;
                 if (booking.activity === "bowling")
                 {
-                    let res = await this.retrieveBowlingData(booking.bookingId);
+                    res = await this.retrieveBowlingData(booking.bookingId);
                     booking.additionalDetails = res;
                 }
                 else if (booking.activity === "cinema")
                 {
                     let seatingManager = new SeatingManager(booking.activity);
-                    let res = await seatingManager.getSeatsForBooking(booking.bookingId);
+                    res = await seatingManager.getSeatsForBooking(booking.bookingId);
                     booking.additionalDetails = {seatIds: res.seatIds, premiumSeatCount: res.premiumSeatCount};
+                }
+                if (booking.activity === "cinema" || booking.activity === "theatre")
+                {
+                    sql = "SELECT title FROM show_details, bookable_sessions WHERE show_details.show_id = bookable_sessions.show_details_id AND bookable_sessions.session_id = " + booking.sessionId + ";";
+                    res = await dbConnection.runQuery(sql);
+                    let showTitle = res[0].title;
+                    booking.additionalDetails.showTitle = showTitle;
                 }
                 bookings.push(booking);
             }
